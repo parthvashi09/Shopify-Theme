@@ -1,0 +1,415 @@
+{% include 'breadcrumbs' %}
+
+<div class="product-template__container page-width" itemscope itemtype="http://schema.org/Product" id="ProductSection-{{ section.id }}" data-section-id="{{ section.id }}" data-section-type="product" data-enable-history-state="true">
+  <meta itemprop="name" content="{{ product.title }}">
+  <meta itemprop="url" content="{{ shop.url }}{{ product.url }}">
+  <meta itemprop="image" content="{{ product.featured_image.src | img_url: '800x' }}">
+
+  {% comment %}
+  Get first variant, or deep linked one
+  {% endcomment %}
+  {%- assign current_variant = product.selected_or_first_available_variant -%}
+  {%- assign product_image_zoom_size = '1024x1024' -%}
+  {%- assign product_image_scale = '2' -%}
+  {%- assign enable_zoom = section.settings.enable_zoom -%}
+
+  {% case section.settings.image_size %}
+  {% when 'small' %}
+  {%- assign product_image_width = 'medium-up--one-third' -%}
+  {%- assign product_description_width = 'medium-up--two-thirds' -%}
+  {%- assign product_thumbnail_width = 'medium-up--one-third' -%}
+  {%- assign height = 345 -%}
+  {% when 'medium' %}
+  {%- assign product_image_width = 'medium-up--one-half' -%}
+  {%- assign product_description_width = 'medium-up--one-half' -%}
+  {%- assign product_thumbnail_width = 'medium-up--one-quarter' -%}
+  {%- assign height = 530 -%}
+  {% when 'large' %}
+  {%- assign product_image_width = 'medium-up--two-thirds' -%}
+  {%- assign product_description_width = 'medium-up--one-third' -%}
+  {%- assign product_thumbnail_width = 'medium-up--one-fifth' -%}
+  {%- assign height = 720 -%}
+  {% when 'full' %}
+  {%- assign product_image_width = '' -%}
+  {%- assign product_description_width = '' -%}
+  {%- assign product_thumbnail_width = 'medium-up--one-eighth' -%}
+  {%- assign height = 1090 -%}
+  {%- assign enable_zoom = false -%}
+  {% endcase %}
+
+  <div class="grid product-single">
+    <div id="active-wrapper" class="grid__item product-single__photos {{ product_image_width }}{% if section.settings.image_size == 'full' %} product-single__photos--full{% endif %}">
+      <div class="product__images-wrap" data-allow-zoom="true">
+        <div class="slider-for">
+          {%- assign featured_image = product.selected_or_first_available_variant.featured_image | default: product.featured_image -%}
+          {% for image in product.images %}
+          <div  class="product-single__photo" data-image-id="{{ image.id }}">
+            <img id="zoom_{{ forloop.index }}" class="image-zoom feature-row__image" src="{{ image | img_url: '1024x1024' }}" 
+                 alt="{{ image.alt | escape }}" data-zoom="{{ image | img_url: '2048x2048', scale: 2 }}"> 
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      <div id="thumbs" class="slider-nav">
+        {% for image in product.images %}
+        <div>
+          <img class="product-single__thumbnail-image" src="{{ image.src | img_url: '110X110' }}" data-img="{{ image }}" alt="{{ image.alt | escape }}">
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="grid__item {{ product_description_width }}">
+      <div class="product-single__meta">
+        <h1 itemprop="name" class="product-single__title">{{ product.title }},
+          <span class="product-single__price product-single__price-{{ section.id }}{% unless current_variant.available %} product-price--sold-out{% endunless %}">
+            {% if current_variant.compare_at_price > current_variant.price %}
+            <span class="visually-hidden">{{ 'products.product.regular_price' | t }}</span>
+            <s id="ComparePrice-{{ section.id }}">{{ current_variant.compare_at_price | money }}</s>
+            <span class="product-price__price product-price__price-{{ section.id }} product-price__sale product-price__sale--single">
+              <span id="ProductPrice"
+                    itemprop="price" content="{{ current_variant.price | divided_by: 100.00 }}">
+                {{ current_variant.price | money }}
+              </span>
+              <span class="product-price__sale-label product-price__sale-label-{{ section.id }}">{{ 'products.product.on_sale' | t }}</span>
+            </span>
+            {% else %}
+            <span class="visually-hidden">{{ 'products.product.regular_price' | t }}</span>
+            <s id="ComparePrice-{{ section.id }}" class="hide">{{ current_variant.compare_at_price | money }}</s>
+            <span class="product-price__price product-price__price-{{ section.id }}">
+              <span id="ProductPrice"
+                    itemprop="price" content="{{ current_variant.price | divided_by: 100.00 }}">
+                {{ current_variant.price | money }}
+              </span>
+              <span class="product-price__sale-label product-price__sale-label-{{ section.id }} hide">{{ 'products.product.on_sale' | t }}</span>
+            </span>
+            {% endif %}
+          </span>
+        </h1>
+        {% if section.settings.review != blank %}
+        <span class="shopify-product-reviews-badge" data-id="{{ product.id }}"></span>
+        {% endif %}
+
+        {% if section.settings.show_vendor %}
+        <p itemprop="brand" class="product-single__vendor">{{ product.vendor }}</p>
+        {% endif %}
+
+        <div itemprop="offers" itemscope itemtype="http://schema.org/Offer">
+          <meta itemprop="priceCurrency" content="{{ shop.currency }}">
+
+          <link itemprop="availability" href="http://schema.org/{% if product.available %}InStock{% else %}OutOfStock{% endif %}">
+
+          {% form 'product', product, class:form_classes, novalidate: 'novalidate' %}
+
+
+          <select name="id" id="ProductSelect" class="product-single__variants no-js">
+            {% for  variant in product.variants %}
+            {% if  variant.available %}
+            <option {% if variant == product.selected_or_first_available_variant %}
+                    selected="selected" {% endif %}
+                    data-sku="{{ variant.sku }}"
+                    value="{{ variant.id }}">
+              {{ variant.title }} - {{ variant.price | money_with_currency }}
+            </option>
+            {% else %}
+            <option disabled="disabled">
+              {{ variant.title }} - {{ 'products.product.sold_out' | t }}
+            </option>
+            {% endif %}
+            {% endfor %}
+          </select>
+          {% if section.settings.show_color_swatch %}
+          {% if product.available and product.variants.size > 1 %}
+          {% for option in product.options %}
+          {% include 'swatch' with option %}
+          {% endfor %}
+          {% endif %}
+          {% endif %}
+          {% if section.settings.show_quantity_selector %}
+          <div class="product-single__quantity">
+            <label for="Quantity" class="product-single__quantity-label js-quantity-selector">{{ 'products.product.quantity' | t }}</label>
+            <input type="number" hidden="hidden" id="Quantity" name="quantity" value="1" min="1" class="js-quantity-selector">
+          </div>
+          {% endif %}
+          <div class="product-single__add-to-cart{% if section.settings.add_to_cart_button_size == 'large' %} product-single__add-to-cart--full-width{% endif %}">
+            <button type="submit" name="add" id="AddToCart--{{ section.id }}" class="btn btn--add-to-cart{% if section.settings.enable_payment_button %} btn--secondary-accent{% endif %}"{% unless current_variant.available %} disabled="disabled"{% endunless %}>
+              <span class="btn__text">
+                {% if current_variant.available %}
+                {{ 'products.product.add_to_cart' | t }}
+                {% else %}
+                {{ 'products.product.sold_out' | t }}
+                {% endif %}
+              </span>
+            </button>
+            {% if section.settings.enable_payment_button %}
+            {{ form | payment_button }}
+            {% endif %}
+          </div>
+          {% endform %}
+        </div>
+
+<!--         <div class="product-single__description rte" itemprop="description">
+          {{ product.description | truncate: '300' }}
+        </div> -->
+        {% if section.settings.show_share_buttons %}
+        {% include 'social-sharing', share_title: product.title, share_permalink: product.url, share_image: product %}
+        {% endif %}
+      </div>
+    </div>
+
+
+
+  </div>
+
+  {% unless product == empty %}
+  <script type="application/json" id="ProductJson-{{ section.id }}">
+    {{ product | json }}
+  </script>
+  {% endunless %}
+</div>
+
+{% if section.settings.show_accordion %}
+<div class="page-width">
+  <div class="js-accordion">
+    <button class="acc-btn js-acc-btn">Description</button>
+    <div class="acc-body js-acc-body">
+      {{product.description}}
+    </div>
+    <button class="acc-btn js-acc-btn">Reviews</button>
+    <div class="acc-body js-acc-body">
+      <div id="shopify-product-reviews" data-id="{{product.id}}">{{ product.metafields.spr.reviews }}</div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<script>
+  var selectCallback = function(variant, selector) {
+    if (variant && variant.available == true) {
+      jQuery('.add').removeClass('disabled').removeAttr('disabled'); // remove unavailable class from add-to-cart button, and re-enable button
+      var qty = ($('#Quantity').length) ? $('#Quantity').val() : 1;
+      jQuery('#ProductPrice').html(Shopify.formatMoney(variant.price * qty, "{{shop.money_without_currency_format}}"));  
+                                                       } 
+                                                       else {
+                                                       jQuery('.add').addClass('disabled').attr('disabled', 'disabled'); // set add-to-cart button to unavailable class and disable button
+                                   var message = variant ? "Sold Out" : "Unavailable";    
+                                   jQuery('#ProductPrice').text(message); // update price-field message
+    }
+  };
+
+  jQuery(function($) {
+    new Shopify.OptionSelectors('ProductSelect', {
+      product: {{ product | json }},
+      onVariantSelected: selectCallback,
+      enableHistoryState: true
+    });
+  });
+</script>
+<script>
+  jQuery(function() {
+    jQuery('.swatch :radio').change(function() {
+      var optionIndex = jQuery(this).closest('.swatch').attr('data-option-index');
+      var optionValue = jQuery(this).val();
+      jQuery(this)
+      .closest('form')
+      .find('.single-option-selector')
+      .eq(optionIndex)
+      .val(optionValue)
+      .trigger('change');
+
+      var img = jQuery(this).attr('data-img');
+      $('.product-single__thumbnail-image[data-img="'+img+'"]').trigger('click');
+    });          
+  });
+</script>
+
+{% schema %}
+{
+"name": {
+"en": "Product pages",
+"de": "Produktseiten",
+"fr": "Pages de produits",
+"it": "Pagine di prodotto",
+"ja": "商品ページ",
+"es": "Páginas de productos",
+"pt-BR": "Páginas de produtos"
+},
+"settings": [
+{
+"type": "select",
+"id": "image_size",
+"label": {
+"en": "Image size",
+"de": "Foto-Größe",
+"fr": "Taille des images",
+"it": "Dimensione immagine",
+"ja": "画像のサイズ",
+"es": "Tamaño de la imagen",
+"pt-BR": "Tamanho da imagem"
+},
+"options": [
+{
+"value": "small",
+"label": {
+"en": "Small",
+"de": "Klein",
+"fr": "Petite",
+"it": "Piccolo",
+"ja": "小",
+"es": "Pequeña",
+"pt-BR": "Pequeno"
+}
+},
+{
+"value": "medium",
+"label": {
+"en": "Medium",
+"de": "Mittel",
+"fr": "Moyenne",
+"it": "Medio",
+"ja": "中",
+"es": "Mediana",
+"pt-BR": "Médio"
+}
+},
+{
+"value": "large",
+"label": {
+"en": "Large",
+"de": "Groß",
+"fr": "Grande",
+"it": "Grande",
+"ja": "大",
+"es": "Grande",
+"pt-BR": "Grande"
+}
+},
+{
+"value": "full",
+"label": {
+"en": "Full-width",
+"de": "Volle Breite",
+"fr": "Pleine largeur",
+"it": "Intera larghezza",
+"ja": "全幅",
+"es": "Ancho completo",
+"pt-BR": "Largura completa"
+}
+}
+],
+"default": "medium"
+},
+{
+"type": "checkbox",
+"id": "show_quantity_selector",
+"label": {
+"en": "Show quantity selector",
+"de": "Quantitäts-Auswahl anzeigen",
+"fr": "Afficher le sélecteur de quantité",
+"it": "Mostra selettore quantità",
+"ja": "数量セレクターを表示する",
+"es": "Mostrar selector de cantidad",
+"pt-BR": "Exibir seletor de quantidade"
+},
+"default": false
+},
+{
+"type": "checkbox",
+"id": "show_variant_labels",
+"label": {
+"en": "Show variant labels",
+"de": "Varianten-Etiketten anzeigen",
+"fr": "Afficher le nom des variantes",
+"it": "Mostra etichette varianti",
+"ja": "バリエーションのラベルを表示する",
+"es": "Mostrar etiquetas de variantes",
+"pt-BR": "Exibir etiquetas de variantes"
+},
+"default": true
+},
+{
+"type": "checkbox",
+"id": "show_vendor",
+"label": {
+"en": "Show vendor",
+"de": "Lieferanten anzeigen",
+"fr": "Afficher les vendeurs",
+"it": "Mostra fornitore",
+"ja": "販売元を表示する",
+"es": "Mostrar proveedor",
+"pt-BR": "Exibir fornecedor"
+},
+"default": false
+},
+{
+"type": "checkbox",
+"id": "enable_zoom",
+"label": {
+"en": "Enable image zoom",
+"de": "Foto-Zoom zulassen",
+"fr": "Activer le zoom d'image",
+"it": "Abilita lo zoom dell'immagine",
+"ja": "画像ズームを有効にする",
+"es": "Habilitar zoom de imagen",
+"pt-BR": "Ativar o zoom da imagem"
+},
+"default": true
+},
+{
+"type": "checkbox",
+"id": "show_share_buttons",
+"label": {
+"en": "Show social sharing buttons",
+"de": "Buttons für Social Media anzeigen",
+"fr": "Affichez les boutons de partage sur les médias sociaux",
+"it": "Mostra i pulsanti per la condivisione sui social",
+"ja": "ソーシャル共有ボタンを表示する",
+"es": "Mostrar botones para compartir en redes sociales",
+"pt-BR": "Exibir botões de compartilhamento em redes sociais"
+},
+"default": true
+},
+{
+"type": "checkbox",
+"id": "show_color_swatch",
+"label": {
+"en": "Show Color Swatch",
+"de": "Farbfeld anzeigen",
+"fr": "Afficher la nuance de couleur",
+"it": "Mostra campione di colore",
+"ja": "色見本を表示",
+"es": "Mostrar muestra de color",
+"pt-BR": "Mostrar amostra de cor"
+},
+"default": true
+},
+{
+"type": "checkbox",
+"id": "show_accordion",
+"label": {
+"en": "Show Accordion",
+"de": "Farbfeld acordeón",
+"fr": "Afficher acordeón",
+"it": "Mostra acordeón",
+"ja": "アコーディオン",
+"es": "Mostrar acordeón",
+"pt-BR": "Mostrar acordeón"
+},
+"default": true
+},
+{
+"type": "checkbox",
+"id": "review",
+"label": {
+"en": "Show Review",
+"de": "Review anzeigen",
+"fr": "Show Review",
+"it": "Mostra recensione                  ",
+"ja": "レビューを表示",
+"es": "Mostrar revisión",
+"pt-BR": "Mostrar comentário"
+},
+"default": true
+}
+]
+}
+{% endschema %}

@@ -1,0 +1,521 @@
+
+{% if section.settings.layout == 'list' %}
+{%- assign limit = 4 -%}
+{% else %}
+{%- assign limit = section.settings.grid | times: section.settings.rows -%}
+{% endif %}
+
+{% paginate collection.products by limit %}
+
+
+{% assign has_sidebar = false %}
+{% if collection.all_tags.size > 0 and section.settings.enable_sidebar %}
+{% assign has_sidebar = true %}
+{% endif %}
+
+<div id="shopify-section-collection" class="shopify-section"><!-- /snippet/collection.liquid -->
+  <div data-section-id="collection" data-section-type="collection">
+    <div class="collection">
+      <div class="collection-feature-img">
+        {% if section.settings.featured_img  %}
+        {% if collection.image %}
+        <img src="{{ collection | img_url: 'master' }}"  alt="{{ collection.title | escape }}" />
+        {% comment %}
+        {% else %}
+        <img src="{{ collection.products.first | img_url: 'master' }}"  alt="{{ collection.title | escape }}"/>
+        {% endcomment %}
+        {% endif %}
+        {% endif %}
+      </div>
+      {% include 'breadcrumbs' %}
+      <hr>
+      <div class="{% if section.settings.fullwidth %}wrapper {% else %} page-width {% endif %}">
+
+        <div class="grid collection-sidebar">
+          {% if has_sidebar %}
+          <div class="grid__item medium-up--one-fifth collection-filters" id="collectionFilters">
+            <nav role="navigation" class="left">
+              <ul class="nav">
+                {% for link in linklists.main-menu.links %}
+                {% assign has_sub_menu = false %}
+                {% assign has_sub_categories = false %}
+                {% assign parent_link_active = false %}
+                {% assign child_list_handle = link.title | handle %}
+                {% if linklists[child_list_handle] and linklists[child_list_handle].links.size > 0 %}
+                {% assign has_sub_menu = true %}
+                {% for l in linklists[child_list_handle].links %}
+                {% if handle != blank and handle == l.object.handle %}
+                {% assign parent_link_active = true %}
+                {% elsif page_title == l.title %}
+                {% assign parent_link_active = true %}
+                {% endif %}
+                {% endfor %}
+                {% assign has_sub_categories = true %}
+                {% endif %}
+                <li class="{% if link.active or parent_link_active %} active{% endif %}{% if has_sub_menu or has_sub_categories %} has-dropdown{% endif %}{% if forloop.first %} first{% elsif forloop.last %} last{% endif %}">
+                  <a href="{{ link.url }}">{{ link.title }}{% if has_sub_menu or has_sub_categories %} <i class="fa fa-angle-down"></i>{% endif %}</a>
+                  {% if has_sub_menu or has_sub_categories %}
+                  <ul class="sub-nav">
+                    {% if has_sub_menu %}
+                    {% for l in linklists[child_list_handle].links %}
+                    <li class="{% if l.active %} active{% endif %}">
+                      <a href="{{ l.url }}">{{ l.title }}</a>
+                    </li>
+                    {% endfor %}
+                    {% elsif has_sub_categories %}
+                    {% for tag in link.object.all_tags %}
+                    <li class="{% if current_tags contains tag %} active{% endif %}">
+                      <a href="{{ link.url }}/{{ tag | handle }}">{{ tag }}</a>
+                    </li>
+                    {% endfor %}
+                    {% endif %}
+                  </ul>
+                  {% endif %}
+                </li>
+                {% endfor %}
+              </ul>
+            </nav>
+          </div>
+          {% endif %}
+          <div class="grid__item {% if has_sidebar %}medium-up--four-fifths {% endif %} second-collection-part">
+
+
+            {% if section.settings.filter %}
+            <div>
+              <div class="clearfix filter hide">
+                <p>Browse by tag:</p>
+                <select class="coll-filter">
+                  <option value="">All</option>
+                  {% for tag in collection.all_tags %}
+                  {% if current_tags contains tag %}
+                  <option value="{{ tag | handle }}" selected>{{ tag }}</option>
+                  {% else %}
+                  <option value="{{ tag | handle }}">{{ tag }}</option>
+                  {% endif %}
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            {% endif %}
+            <div>
+              <header class="section-header">
+                <h1 class="collection__title underline"> {{ collection.title }}</h1>
+                <div class="section-header--right mobile-hide">
+                  <div class="form-horizontal">
+                    <label for="sort-by" class="">Sort by</label> 
+                    <select id="sort-by" class="sort-by">
+                      <option value="manual">Featured</option>
+                      <option value="price-ascending">Price: Low to High</option>
+                      <option value="price-descending">Price: High to Low</option>
+                      <option value="title-ascending">Alphabetically, A-Z</option>
+                      <option value="title-descending">Alphabetically, Z-A</option>
+                      <option value="created-ascending">Date, old to new</option>
+                      <option value="created-descending">Date, new to old</option>
+                      <option value="best-selling">Best Selling</option>
+                    </select>
+
+                    {% include 'collection-views' %}
+                  </div>
+                </div>
+
+
+                <div class="grid desktop-hide">
+                  <div class="grid__item one-half">
+                    <select id="sort-by" class="sort-by">
+                      <option value="">Sort By</option>
+                      <option value="manual">Featured</option>
+                      <option value="price-ascending">Price: Low to High</option>
+                      <option value="price-descending">Price: High to Low</option>
+                      <option value="title-ascending">Alphabetically, A-Z</option>
+                      <option value="title-descending">Alphabetically, Z-A</option>
+                      <option value="created-ascending">Date, old to new</option>
+                      <option value="created-descending">Date, new to old</option>
+                      <option value="best-selling">Best Selling</option>
+                    </select>
+                  </div>
+                  <div class="grid__item one-half" style="padding:0px;">
+                    <select class="coll-filter">
+                      <option value="">Filter By</option>
+                      {% for tag in collection.all_tags %}
+                      {% if current_tags contains tag %}
+                      <option value="{{ tag | handle }}" selected>{{ tag }}</option>
+                      {% else %}
+                      <option value="{{ tag | handle }}">{{ tag }}</option>
+                      {% endif %}
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+              </header>
+              <div class="grid grid-uniform">
+                {%- assign blocks = section.blocks | sort: 'collection.all_products_count' -%}
+                {% if section.settings.layout == 'list' %}
+                
+                <ul class="list-view-items">
+                  {% for product in collection.products %}
+                  <li class="list-view-item">
+                    {% include 'product-card-list', product: product %}
+                  </li>
+                  {% else %}
+                  {% if collection.handle == 'all' and collection.all_vendors.size == 0 and collection.all_types.size == 0%}
+                  {% for i in (1..4) %}
+                  <li class="list-view-item">
+                    <a href="#" class="list-view-item__link">
+                      <div class="list-view-item__image-column">
+                        <div class="list-view-item__image-wrapper">
+                          <div class="list-view-item__image">
+                            {% capture current %}{% cycle 1, 2, 3, 4 %}{% endcapture %}
+                            {{ 'product-' | append: current | placeholder_svg_tag: 'placeholder-svg' }}
+                          </div>
+                        </div>
+                      </div>
+                      <div class="list-view-item__title-column">
+                        <div class="list-view-item__title">{{ 'homepage.onboarding.product_title' | t }}</div>
+                      </div>
+                      <div class="list-view-item__price-column">
+                        <span class="product-price__price">$19.99</span>
+                      </div>
+                    </a>
+                  </li>
+                  {% endfor %}
+                  {% else %}
+                  {%- assign is_empty_collection = true -%}
+                  {% endif %}
+                  {% endfor %}
+                </ul>
+                
+                {% else %}
+                
+                {% case section.settings.grid %}
+                {% when 2 %}
+                {%- assign grid_item_width = 'medium-up--one-half' -%}
+                {%- assign image_size = '530x' -%}
+                {% when 3 %}
+                {%- assign grid_item_width = 'small--one-half medium-up--one-third' -%}
+                {%- assign image_size = '350x' -%}
+                {% when 4 %}
+                {%- assign grid_item_width = 'small--one-half medium-up--one-quarter' -%}
+                {%- assign image_size = '250x' -%}
+                {% when 5 %}
+                {%- assign grid_item_width = 'small--one-half medium-up--one-fifth' -%}
+                {%- assign image_size = '225x' -%}
+                {% endcase %}
+                {% for product in collection.products limit: product_limit %}
+                <div class="grid__item small--one-half {{ grid_item_width }}">
+                  <div class="grid__wrap">
+                    <div class="grid-view-item{% unless product.available %} product-price--sold-out grid-view-item--sold-out{% endunless %}{% if product.compare_at_price  %} on-sale{% endif %}">
+                      <a class="grid-view-item__link grid-view-item__image-container" href="{{ product.url | within: collection }}">
+                        {% capture img_id %}ProductCardImage-{{ section.id }}-{{ product.id }}{% endcapture %}
+                        {% capture wrapper_id %}ProductCardImageWrapper-{{ section.id }}-{{ product.id }}{% endcapture %}
+                        {%- assign img_url = product.featured_image | img_url: '1x1' | replace: '_1x1.', '_{width}x.' -%}
+
+                        <div id="{{ wrapper_id }}" class="grid-view-item__image-wrapper js">
+                          <div class="grid--header">
+                            <img id="{{ img_id }}"
+                                 class="grid-view-item__image"
+                                 src="{{ product.featured_image | img_url: '350x350' }}"
+                                 alt="{{ product.featured_image.alt | escape }}">
+
+                          </div>
+                        </div>
+                        <noscript>
+                          {% capture image_size %}{{ max_height }}x{{ max_height }}{% endcapture %}
+                          <img class="grid-view-item__image" src="{{ product.featured_image.src | img_url: image_size, scale: 2 }}" alt="{{ product.featured_image.alt }}" style="max-width: {{ max_height | times: product.featured_image.aspect_ratio }}px;">
+                        </noscript>
+                        <div class="product-info">
+                          <div class="h4 grid-view-item__title">{{ product.title }}</div>
+
+
+                          <!-- snippet/product-price.liquid -->
+                          {% include 'product-price' %}  
+
+                          {% if section.settings.vendor %}
+                          <div class="grid-view-item__vendor">{{ product.vendor }}</div>
+                          {% endif %}
+                          <div class="mobile-hide">
+                            {% if section.settings.review != blank  %}
+                            <span class="shopify-product-reviews-badge" data-id="{{ product.id }}"></span>
+                            {% endif %}
+                          </div>
+                          <div class="collection-buttons">
+                            {% if section.settings.quick_view != blank %}
+                            <div class="mobile-hide">
+                              <div class="quick-view-button quick-view-btn"><a  class="quick-view" data-handle="{{ product.handle }}">Quick View</a></div>
+                            </div>
+                            {% else %}
+                            <div class="add-to-cart">
+                              <form action="/cart/add"  data-productid="{{product.id}}" method="post" enctype="multipart/form-data" class="product-form product-form-{{ section.id }}{% unless section.settings.show_variant_labels %} product-form--hide-variant-labels{% endunless %}" data-section="{{ section.id }}">
+                                {% unless product.has_only_default_variant %}
+                                {% for option in product.options_with_values %}
+                                <div class="selector-wrapper js product-form__item">
+                                  <select class="single-option-selector single-option-selector-{{ section.id }} product-form__input" id="SingleOptionSelector-{{ forloop.index0 }}" data-index="option{{ forloop.index }}" name="id" data-productid="{{product.id}}">
+                                    {% for value in option.values %}
+                                    <option value="{{ value | escape }}"{% if option.selected_value == value %} selected="selected"{% endif %}>{{ value }}</option>
+                                    {% endfor %}
+                                  </select>
+                                </div>
+                                {% endfor %}
+                                {% endunless %}
+
+                                <select name="id" id="ProductSelect-{{ product.id }}" data-product="{{ product.id }}" class="product-form__variants no-js">
+                                  {% for variant in product.variants %}
+                                  {% if product.options.size >= 1 %}
+                                  <option {% if variant == product.selected_or_first_available_variant %} selected="selected" {% endif %} data-value="{{ variant.title }}" value="{{ variant.id }}">
+                                    {{ variant.title }}
+                                  </option>
+                                  {% else %}
+                                  <option disabled="disabled">{{ variant.title }} - {{ 'products.product.sold_out' | t }}</option>
+                                  {% endif %}
+                                  {% endfor %}
+                                </select>
+
+                                <input type="hidden" id="Quantity" name="quantity" value="1" min="1" class="product-form__input" pattern="[0-9]*">
+
+                                <div class="add-to-cart">
+                                  <div class="product-form-submit-wrap">
+                                    {% if product.available %}
+                                    <input type="submit" value="{{ 'products.product.add_to_cart' | t }}" class="add_to_cart  add-to-cart-btn{% comment %}{% if product.available and product.variants.size > 1 %} half-size-btn {% endif %}{% endcomment %}" />
+                                    <div class="add-to-cart-loader"></div>
+                                    {% capture cart_link %}
+                                    <a href="/cart">{{ 'products.product.cart_link' | t }}</a>
+                                    {% endcapture %}
+                                    {% capture continue_link %}
+                                    <a href="/collections/all">{{ 'products.product.continue_link' | t }}</a>
+                                    {% endcapture %}
+                                    {% capture checkout_link %}
+                                    <a href="/checkout">{{ 'products.product.checkout_link' | t }}</a>
+                                    {% endcapture %}
+                                    {% capture product_item %}
+                                    <span class='added-product-name'></span>
+                                    {% endcapture %}
+                                    {% else %}
+                                    <input type="button" class="disabled sold-out sold-out-btn" disabled="disabled" value="{{ 'products.product.sold_out' | t }}" />
+                                    {% endif %}
+                                  </div>
+                                </div>
+                              </form>
+                            </div>
+                            {% endif %}
+                          </div>
+
+                        </div>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                {% else %}
+
+
+                {% for i in (1..12) %}
+                <div class="grid__item large--one-quarter medium--one-third small--one-half">
+                  <div class="grid-view-item">
+                    <a href="#"  class="grid-view-item__link grid-view-item__image-container">
+                      {% capture current %}{% cycle 1, 2, 3, 4, 5, 6 %}{% endcapture %}
+                      {{ 'product-' | append: current | placeholder_svg_tag: 'placeholder-svg placeholder-svg--small' }}
+                      <p>
+                        {{ 'homepage.onboarding.product_title' | t }}
+                      </p>
+                    </a>
+                    <p class="price">{{ 1999 | money }}</p>
+                  </div>
+                </div>
+                {% endfor %}
+                {% endfor %}
+                
+                {% endif %}
+              </div>
+            </div>
+            {% if paginate.pages > 1 %}
+            {% include 'pagination' %}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+</div>
+
+{% endpaginate %}
+<script>
+  Shopify.queryParams = {};
+  if (location.search.length) {
+    for (var aKeyValue, i = 0, aCouples = location.search.substr(1).split('&'); i < aCouples.length; i++) {
+      aKeyValue = aCouples[i].split('=');
+      if (aKeyValue.length > 1) {
+        Shopify.queryParams[decodeURIComponent(aKeyValue[0])] = decodeURIComponent(aKeyValue[1]);
+      }
+    }
+  }
+  jQuery('.sort-by')
+  .val('{{ collection.sort_by | default: collection.default_sort_by | escape }}')
+       .bind('change', function() {
+    Shopify.queryParams.sort_by = jQuery(this).val();
+    location.search = jQuery.param(Shopify.queryParams).replace(/\+/g, '%20');
+  });
+</script>
+
+{% schema %}
+{
+"name": "Collection Page",
+"settings": [
+{
+"type": "checkbox",
+"id": "fullwidth",
+"label": {
+"en": "Enable fullwidth",
+"de": "Ankündigung anzeigen",
+"fr": "Afficher l'annonce"
+}
+},
+
+{
+"type":"checkbox",
+"id":"featured_img",
+"label":{
+"de": "Zeigen Sie das vorgestellte Bild",
+"en": "Show featured image",
+"es": "Mostrar imagen destacada",
+"fr": "Afficher l'image sélectionnée",
+"it": "Mostra l'immagine in primo piano",
+"ja": "注目の画像を表示",
+"pt-BR": "Mostrar imagem em destaque"
+}
+},
+{
+"type":"checkbox",
+"id":"vendor",
+"label":{
+"de": "Anbieter anzeigen",
+"en": "Show vendor",
+"es": "Mostrar vendedor",
+"fr": "Afficher le vendeur",
+"it": "Mostra venditore",
+"ja": "ベンダーを表示",
+"pt-BR": "Mostrar vendedor"
+}
+},
+{
+"type":"checkbox",
+"id":"filter",
+"label":
+{
+"de": "Filter anzeigen",
+"en": "Show filter",
+"es": "Mostrar filtro",
+"fr": "Afficher le filtre",
+"it": "Mostra filtro",
+"ja": "フィルタを表示",
+"pt-BR": "Mostrar filtro"
+}
+},
+{
+"type": "checkbox",
+"id": "enable_sidebar",
+"label": {
+"de": "Seitenleiste aktivieren",
+"en": "Enable sidebar",
+"es": "Habilitar barra lateral",
+"fr": "Activer la barre latérale",
+"it": "Attiva sidebar",
+"ja": "サイドバーを有効にする",
+"pt-BR": "Ativar barra lateral"
+},
+"default": true
+},
+{
+"type":"checkbox",
+"id":"enable-collection-sorting",
+"label":
+{
+"de": "Aktivieren Sie die Sortierung der Sammlung",
+"en": "Enable collection sorting",
+"es": "Habilitar clasificación de colección",
+"fr": "Activer le tri de la collection",
+"it": "Abilita l'ordinamento delle raccolte",
+"ja": "コレクションの並べ替えを有効にする",
+"pt-BR": "Ativar a ordenação de coleções"
+}
+},
+{
+"type": "checkbox",
+"id": "review",
+"label": 
+{
+"de": "Review anzeigen",
+"en": "Show Review",
+"es": "Mostrar revisión",
+"fr": "Show Review",
+"it": "Mostra recensione",
+"ja": "レビューを表示",
+"pt-BR": "Mostrar comentário"
+},
+"default": true
+},
+{
+"type": "checkbox",
+"id": "quick_view",
+"label": 
+{
+"de": "Produkt-Schnellansicht aktivieren",
+"en": "Enable Product Quick View",
+"es": "Habilitar vista rápida del producto",
+"fr": "Activer Aperçu rapide du produit",
+"it": "Abilita la visualizzazione rapida del prodotto",
+"ja": "製品クイックビューを有効にする",
+"pt-BR": "Ativar visualização rápida do produto"
+}
+},
+{
+"type": "checkbox",
+"id": "recently-viewed",
+"label": 
+{
+"de": "Review anzeigen",
+"en": "Recently Viewed Product",
+"es": "Mostrar revisión",
+"fr": "Show Review",
+"it": "Mostra recensione",
+"ja": "レビューを表示",
+"pt-BR": "Mostrar comentário"
+},
+"default": true
+},
+{
+"type": "range",
+"id": "grid",
+"label": {
+"en": "Collections per row",
+"de": "Kategorien per Reihe",
+"fr": "Collections par rangée",
+"it": "Collezioni per riga",
+"ja": "行あたりのコレクション数",
+"es": "Colecciones por fila",
+"pt-BR": "Coleções por linha"
+},
+"min": 2,
+"max": 4,
+"step": 1,
+"default": 3
+},
+{
+"type": "range",
+"id": "rows",
+"label": {
+"en": "Rows per page (grid only)",
+"de": "Reihen per Seite (nur Raster)",
+"fr": "Rangées par page (grille uniquement)",
+"it": "Righe per pagina (solo griglia)",
+"ja": "ページあたりの行数（グリッドのみ）",
+"es": "Filas por página (solo cuadrícula)",
+"pt-BR": "Linhas por página (somente grade)"
+},
+"default": 2,
+"min": 1,
+"max": 8,
+"step": 1
+}
+]
+}
+
+{% endschema %}

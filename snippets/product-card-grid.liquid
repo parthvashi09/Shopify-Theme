@@ -1,0 +1,88 @@
+<div class="grid__wrap grid-view-item{% unless product.available %} grid-view-item--sold-out{% endunless %} product-card">
+  <a class="grid-view-item__link grid-view-item__image-container full-width-link" href="{{ product.url | within: collection }}">
+    <span class="visually-hidden">{{ product.title }}</span>
+  {% capture img_id %}ProductCardImage-{{ section.id }}-{{ product.id }}{% endcapture %}
+  {% capture wrapper_id %}ProductCardImageWrapper-{{ section.id }}-{{ product.id }}{% endcapture %}
+  {%- assign img_url = product.featured_image | img_url: '1x1' | replace: '_1x1.', '_{width}x.' -%}
+
+  
+
+  <div id="{{ wrapper_id }}" class="grid-view-item__image-wrapper text-center product-card__image-wrapper js">
+    <div>
+      <img id="{{ img_id }}"
+            class="grid-view-item__image lazyload"
+            src="{{ product.featured_image | img_url: 'master' }}"
+            data-src="{{ img_url }}"
+            data-widths="[180, 360, 540, 720, 900, 1080, 1296, 1512, 1728, 2048]"
+            data-aspectratio="{{ product.featured_image.aspect_ratio }}"
+            data-sizes="auto"
+            alt="{{ product.featured_image.alt }}">
+    </div>
+  </div>
+  <noscript>
+    {% capture image_size %}{{ max_height }}x{{ max_height }}{% endcapture %}
+    <img class="grid-view-item__image" src="{{ product.featured_image.src | img_url: image_size, scale: 2 }}" alt="{{ product.featured_image.alt }}" style="max-width: {{ max_height | times: product.featured_image.aspect_ratio }}px;">
+  </noscript>
+  <div class="h4 grid-view-item__title product-card__title text-center" aria-hidden="true">{{ product.title }}</div>
+    <div class="text-center">
+  {% include 'product-price', variant: product %}
+    </div>
+</a>
+   <div class="text-center mobile-hide">
+        <span class="shopify-product-reviews-badge" data-id="{{ product.id }}"></span>
+    </div>
+    <div>
+    <form action="/cart/add" style="visibility: hidden" data-productid="{{product.id}}" method="post" enctype="multipart/form-data" class="product-form hover-btn product-form-{{ section.id }}{% unless section.settings.show_variant_labels %} product-form--hide-variant-labels{% endunless %}" data-section="{{ section.id }}">
+      {% unless product.has_only_default_variant %}
+      {% for option in product.options_with_values %}
+      <div class="selector-wrapper js product-form__item">
+        <select class="single-option-selector single-option-selector-{{ section.id }} product-form__input" id="SingleOptionSelector-{{ forloop.index0 }}" data-index="option{{ forloop.index }}" name="id" data-productid="{{product.id}}">
+          {% for value in option.values %}
+          <option value="{{ value | escape }}"{% if option.selected_value == value %} selected="selected"{% endif %}>{{ value }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% endfor %}
+      {% endunless %}
+
+      <select name="id" id="ProductSelect-{{ product.id }}" data-product="{{ product.id }}" class="product-form__variants no-js">
+        {% for variant in product.variants %}
+        {% if product.options.size >= 1 %}
+        <option {% if variant == product.selected_or_first_available_variant %} selected="selected" {% endif %} data-value="{{ variant.title }}" value="{{ variant.id }}">
+          {{ variant.title }}
+        </option>
+        {% else %}
+        <option disabled="disabled">{{ variant.title }} - {{ 'products.product.sold_out' | t }}</option>
+        {% endif %}
+        {% endfor %}
+      </select>
+
+      <input type="hidden" id="Quantity" name="quantity" value="1" min="1" class="product-form__input" pattern="[0-9]*">
+      
+      <div class="add-to-cart">
+        <div class="product-form-submit-wrap">
+          {% if product.available %}
+          <input type="submit" value="{{ 'products.product.add_to_cart' | t }}" class="add_to_cart {% comment %}{% if product.available and product.variants.size > 1 %} half-size-btn {% endif %}{% endcomment %}" />
+          <div class="add-to-cart-loader"></div>
+          {% capture cart_link %}
+          <a href="/cart">{{ 'products.product.cart_link' | t }}</a>
+          {% endcapture %}
+          {% capture continue_link %}
+          <a href="/collections/all">{{ 'products.product.continue_link' | t }}</a>
+          {% endcapture %}
+          {% capture checkout_link %}
+          <a href="/checkout">{{ 'products.product.checkout_link' | t }}</a>
+          {% endcapture %}
+          {% capture product_item %}
+          <span class='added-product-name'></span>
+          {% endcapture %}
+
+          {% else %}
+          <input type="button" class="disabled sold-out" disabled="disabled" value="{{ 'products.product.sold_out' | t }}" />
+          {% endif %}
+        </div>
+
+      </div>
+    </form>
+  </div>
+</div>

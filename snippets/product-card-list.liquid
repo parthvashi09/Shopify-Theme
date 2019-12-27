@@ -1,0 +1,103 @@
+<div class=" product-card product-card--list">
+  <a class="full-width-link" href="{{ product.url | within: collection }}">
+    <span class="visually-hidden">{{ product.title }}</span>
+
+  <div class="list-view-item__link">
+    <div class="list-view-item__image-column">
+      <div class="list-view-item__image-wrapper product-card__image-wrapper">
+        <img class="list-view-item__image" src="{{ product.featured_image.src | img_url: '95x95', scale: 2 }}" alt="">
+      </div>
+    </div>
+
+    <div class="list-view-item__title-column">
+      <div class="list-view-item__title" aria-hidden="true">
+        <span class="product-card__title">{{ product.title }}</span>
+      </div>
+      {% if product.compare_at_price > product.price %}
+        <div class="list-view-item__on-sale">{{ 'products.product.on_sale' | t }}</div>
+      {% endif %}
+      {% if section.settings.vendor %}
+        <div class="list-view-item__vendor">{{ product.vendor }}</div>
+      {% endif %}
+      <div class="mobile-hide">
+      {% if section.settings.review != blank  %}
+      <span class="shopify-product-reviews-badge" data-id="{{ product.id }}"></span>
+      {% endif %}
+       </div>
+      {% unless product.available %}
+        <div class="list-view-item__sold-out">{{ 'products.product.sold_out' | t }}</div>
+      {% endunless %}
+    </div>
+
+    <div class="list-view-item__price-column">
+      {% if product.available %}
+        {% include 'product-price', variant: product %}
+      {% endif %}
+    </div>
+  </div>
+
+<div class="list-view-item__price-column list-view-item__add-to-cart-column">
+{% if section.settings.quick_view != blank %}
+<div class="mobile-hide">
+<div class="quick-view-button"><a class="quick-view" data-handle="{{ product.handle }}">Quick View</a></div>
+</div>
+{% else %}
+<div class="add-to-cart">
+<form action="/cart/add"  data-productid="{{product.id}}" method="post" enctype="multipart/form-data" class="product-form product-form-{{ section.id }}{% unless section.settings.show_variant_labels %} product-form--hide-variant-labels{% endunless %}" data-section="{{ section.id }}">
+  {% unless product.has_only_default_variant %}
+  {% for option in product.options_with_values %}
+  <div class="selector-wrapper js product-form__item">
+    <select class="single-option-selector single-option-selector-{{ section.id }} product-form__input" id="SingleOptionSelector-{{ forloop.index0 }}" data-index="option{{ forloop.index }}" name="id" data-productid="{{product.id}}">
+      {% for value in option.values %}
+      <option value="{{ value | escape }}"{% if option.selected_value == value %} selected="selected"{% endif %}>{{ value }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  {% endfor %}
+  {% endunless %}
+
+  <select name="id" id="ProductSelect-{{ product.id }}" data-product="{{ product.id }}" class="product-form__variants no-js">
+    {% for variant in product.variants %}
+    {% if product.options.size >= 1 %}
+    <option {% if variant == product.selected_or_first_available_variant %} selected="selected" {% endif %} data-value="{{ variant.title }}" value="{{ variant.id }}">
+      {{ variant.title }}
+    </option>
+    {% else %}
+    <option disabled="disabled">{{ variant.title }} - {{ 'products.product.sold_out' | t }}</option>
+    {% endif %}
+    {% endfor %}
+  </select>
+
+  <input type="hidden" id="Quantity" name="quantity" value="1" min="1" class="product-form__input" pattern="[0-9]*">
+  
+  <div class="add-to-cart">
+    <div class="product-form-submit-wrap">
+      {% if product.available %}
+      <input type="submit" value="{{ 'products.product.add_to_cart' | t }}" class="add_to_cart {% comment %}{% if product.available and product.variants.size > 1 %} half-size-btn {% endif %}{% endcomment %}" />
+      <div class="add-to-cart-loader"></div>
+      {% capture cart_link %}
+      <a href="/cart">{{ 'products.product.cart_link' | t }}</a>
+      {% endcapture %}
+      {% capture continue_link %}
+      <a href="/collections/all">{{ 'products.product.continue_link' | t }}</a>
+      {% endcapture %}
+      {% capture checkout_link %}
+      <a href="/checkout">{{ 'products.product.checkout_link' | t }}</a>
+      {% endcapture %}
+      {% capture product_item %}
+      <span class='added-product-name'></span>
+      {% endcapture %}
+
+      {% else %}
+      <input type="button" class="disabled sold-out" disabled="disabled" value="{{ 'products.product.sold_out' | t }}" />
+      {% endif %}
+    </div>
+
+  </div>
+</form>
+ </div>
+ {% endif %}
+</div>
+</a>
+
+</div>

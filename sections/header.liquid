@@ -1,0 +1,611 @@
+{% assign menu = linklists[child_list_handle] %}
+{% assign display_products = show_products %}
+{% assign display_title = show_title %}
+{% if link.type == 'collection_link' %}
+  {% if link.object.products_count == 0 %}
+    {% assign display_products = true %}
+  {% endif %}
+{% else %}
+  {% assign display_products = false %}
+  {% assign display_title = false %}
+{% endif %}
+{% assign max_columns = 5 %}
+{% assign links_per_column = 7 %}
+{% assign max_links = max_columns | times: links_per_column %}
+{% if display_products == false and linklists[child_list_handle].links.size > max_links %}
+  {% assign links_per_column = linklists[child_list_handle].links.size | divided_by: max_columns %}
+  {% assign remainder = linklists[child_list_handle].links.size | modulo: max_columns %}
+  {% if remainder > 0 %}
+    {% assign links_per_column = links_per_column | plus: 1 %}
+  {% endif %}
+{% endif %}
+{% assign meganav_column_width = 'one-fifth' %}
+{% assign number_of_links = menu.links.size %}
+{% if display_products %}
+  {% assign number_of_links = number_of_links | plus: 1 %}
+{% endif %}
+{% assign number_of_link_columns = number_of_links | divided_by: links_per_column %}
+{% assign number_of_link_columns_remainder = number_of_links | modulo: links_per_column %}
+{% unless number_of_link_columns_remainder == 0 %}
+  {% assign number_of_link_columns = number_of_link_columns | plus: 1 %}
+{% endunless %}
+{% assign number_of_product_columns = max_columns | minus: number_of_link_columns %}
+
+
+<style>
+  {% if section.settings.logo != blank %}
+  .site-header__logo-image {
+    max-width: {{ section.settings.logo_max_width }}px;
+  }
+  {% endif %}
+
+  {% if section.settings.align_logo == 'left' %}
+  .site-header__logo-image {
+    margin: 0;
+  }
+  @media only screen and (max-width: 989px){
+  .site-header__logo-image {
+    margin: 0 auto;
+  }
+  }
+  {% endif %}
+</style>
+<div data-section-id="{{ section.id }}" data-section-type="header-section">
+  {% if section.settings.home_page_only == false or template.name == 'index' %}
+  <style>
+  .info-bar{
+          background-color: {{ section.settings.color_bg }};
+          color: {{ section.settings.color_text }};
+        }
+  </style>
+  {% if section.settings.message %}
+  <div class="info-bar showMobile">
+    <div class="wrapper text-center">
+      <div class="header-message uppercase">
+        <span class="ms1">{{ section.settings.message_text1 }}</span>
+        {% unless section.settings.message_text2 == '' %}<span class="ms2">{{ section.settings.message_text2 }}</span>{% endunless %}
+        {% unless section.settings.message_text3 == '' %}<span class="ms3">{{ section.settings.message_text3 }}</span>{% endunless %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  {% endif %}
+  
+  <header {% if section.settings.stickyheader %} id="sticky-header" {% endif %} class="header site-header{% if section.settings.align_logo == 'left' %} border-bottom logo--left{% else %} logo--center{% endif %}" role="banner">
+<div class="{% if section.settings.fullwidth %}wrapper {% else %} page-width {% endif %}">
+    <div class="grid small-hide desktop-menu grid--no-gutters grid--table site-header__mobile-nav">
+      {% if section.settings.align_logo == 'center' %}
+      <div class="grid__item medium-up--one-third text-left">
+        <nav role="navigation">
+          <ul class="site-nav">
+            {% for link in linklists[section.settings.left_main_linklist].links %}
+            {%- assign child_list_handle = link.title | handleize -%}
+            {% if menus[child_list_handle].links != blank %}
+            <li class="site-nav--has-submenu{% if link.active %} site-nav--active{% endif %}">
+              <a href="{{ link.url }}" class="site-nav__link">
+                <span class="{% if link.active %} site-nav--active {% endif %}site-nav__text">{{ link.title }}</span>
+              </a>
+              <div class="main-menu-dropdown main-menu-dropdown2">
+                <ul class="site-nav__submenu page-width ">
+                  {% for childlink in linklists[child_list_handle].links %}
+                  <li {% if childlink.active %}class="site-nav--active"{% endif %}>
+                    <a href="{{ childlink.url }}" class="site-nav__link site-nav__submenu2">
+                      <span class="site-nav__text1">{{ childlink.title | escape }}</span></a>
+                    <ul class="site-nav__submenu site-nav__submenu1">
+                      {% for sublink in linklists[childlink.handle].links %}
+                      <li {% if sublink.active %}class="site-nav--active"{% endif %}>
+                        <a href="{{ sublink.url }}" class="site-nav__link">{{ sublink.title | escape }}</a>
+                      </li>
+                      {% endfor %}
+                    </ul>
+                  </li>
+                  {% endfor %}
+                  <li >
+                    {% if display_products %}
+                    {% for product in link.object.products limit: number_of_product_columns %}
+                    <div class="grid__item {{ meganav_column_width }} meganav__product">
+                      {% include 'collection-grid-item', product: product %}
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+                    <a href="{{ link.url }}">
+                      {% if link.type == "collection_link" and link.object.image %}
+                      {{ link.object.image | img_url: '300X300' | img_tag }}
+                      {% endif %}
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </li>
+            {% else %}
+            <li {% if link.active %}class="site-nav--active"{% endif %}>
+              <a href="{{ link.url }}" class="site-nav__link"><span class="site-nav__text">{{ link.title }}</span></a>
+            </li>
+            {% endif %}
+            {% endfor %}
+          </ul>
+        </nav>
+      </div>
+      {% endif %}
+
+      {% if section.settings.align_logo == 'center' %}
+      {%- assign logo_classes = 'medium-up--one-third text-center' -%}
+      {% else %}
+      {%- assign logo_classes = 'medium-up--one-quarter text-left' -%}
+      {% endif %}
+
+      {% if section.settings.align_logo == 'left' %}
+      <div class="grid__item {{ logo_classes }}">
+        {% if template.name == 'index' %}
+        <h1 itemscope itemtype="http://schema.org/Organization">
+          {% else %}
+          <div class="h1" itemscope itemtype="http://schema.org/Organization">
+            {% endif %}
+            <a href="/" itemprop="url" class="site-logo{% if section.settings.logo != blank %} site-header__logo-image{% endif %}">
+              {% if section.settings.logo != blank %}
+              {% capture image_size %}{{ section.settings.logo_max_width }}x{% endcapture %}
+              <img src="{{ section.settings.logo | img_url: image_size }}"
+                   srcset="{{ section.settings.logo | img_url: image_size }} 1x, {{ section.settings.logo | img_url: image_size, scale: 2 }} 2x"
+                   alt="{{ section.settings.logo.alt | default: shop.name }}"
+                   itemprop="logo">
+              {% else %}
+              {{ shop.name }}
+              {% endif %}
+            </a>
+            {% if template.name == 'index' %}
+            </h1>
+          {% else %}
+          </div>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      {% if section.settings.align_logo == 'left' %}
+      <div class="grid__item medium-up--one-half text-center site-header__icons{% if shop.customer_accounts_enabled %} site-header__icons--plus{% endif %}">
+        <div class="site-header__icons-wrapper">
+          <div class="site-header__search site-header__icon small--hide">
+            <nav role="navigation">
+              <ul class="site-nav">
+                {% for link in linklists[section.settings.left_main_linklist].links %}
+                {%- assign child_list_handle = link.title | handleize -%}
+                {% if menus[child_list_handle].links != blank %}
+                <li class="site-nav--has-submenu{% if link.active %} site-nav--active{% endif %}">
+                  <a href="{{ link.url }}" class="site-nav__link">
+                    <span class="site-nav__text">{{ link.title }}</span>
+                  </a>
+                  <div class="main-menu-dropdown main-menu-dropdown2">
+                    <ul class="site-nav__submenu page-width ">
+                      <li >
+                        <a href="{{ link.url }}">
+                          {% if link.type == "collection_link" and link.object.image %}
+                          {{ link.object.image | img_url: '300X300' | img_tag }}
+                          {% endif %}
+                        </a>
+                      </li>
+                      {% for childlink in linklists[child_list_handle].links %}
+                      <li {% if childlink.active %}class="site-nav--active"{% endif %}>
+                        <a href="{{ childlink.url }}" class="site-nav__link site-nav__submenu2">
+                          <span class="site-nav__text1">{{ childlink.title | escape }}</span></a>
+                        <ul class="site-nav__submenu site-nav__submenu1">
+                          {% for sublink in linklists[childlink.handle].links %}
+                          <li {% if sublink.active %}class="site-nav--active"{% endif %}>
+                            <a href="{{ sublink.url }}" class="site-nav__link">{{ sublink.title | escape }}</a>
+                          </li>
+                          {% endfor %}
+                        </ul>
+                      </li>
+                      {% endfor %}
+                    </ul>
+                  </div>
+                </li>
+                {% else %}
+                <li {% if link.active %}class="site-nav--active"{% endif %}>
+                  <a href="{{ link.url }}" class="site-nav__link"><span class="site-nav__text">{{ link.title }}</span></a>
+                </li>
+                {% endif %}
+                {% endfor %}
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+
+      {% if section.settings.align_logo == 'center' %}
+      <div class="grid__item {{ logo_classes }}">
+        {% if template.name == 'index' %}
+        <h1 itemscope itemtype="http://schema.org/Organization">
+          {% else %}
+          <div class="h1" itemscope itemtype="http://schema.org/Organization">
+            {% endif %}
+            <a href="/" itemprop="url" class="site-logo{% if section.settings.logo != blank %} site-header__logo-image{% endif %}">
+              {% if section.settings.logo != blank %}
+              {% capture image_size %}{{ section.settings.logo_max_width }}x{% endcapture %}
+              <img src="{{ section.settings.logo | img_url: image_size }}"
+                   srcset="{{ section.settings.logo | img_url: image_size }} 1x, {{ section.settings.logo | img_url: image_size, scale: 2 }} 2x"
+                   alt="{{ section.settings.logo.alt | default: shop.name }}"
+                   itemprop="logo">
+              {% else %}
+              {{ shop.name }}
+              {% endif %}
+            </a>
+            {% if template.name == 'index' %}
+            </h1>
+          {% else %}
+          </div>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      
+      <div class="grid__item {% if section.settings.align_logo == 'left' %} medium-up--one-quarter {% else %}medium-up--one-third{% endif %} text-right">
+        <nav role="navigation">
+          <ul class="site-nav">
+            {% for link in linklists[section.settings.right_main_linklist].links %}
+            {%- assign child_list_handle = link.title | handleize -%}
+            {% if menus[child_list_handle].links != blank %}
+            <li class="site-nav--has-submenu{% if link.active %} site-nav--active{% endif %}">
+              <a href="{{ link.url }}" class="site-nav__link">
+                <span class="site-nav__text">{{ link.title }}</span>
+              </a>
+              <div class="main-menu-dropdown ">
+                <ul class="site-nav__submenu">
+                  {% for childlink in menus[child_list_handle].links %}
+                  <li {% if childlink.active %}class="site-nav--active"{% endif %}>
+                    <a href="{{ childlink.url }}" class="site-nav__link">{{ childlink.title | escape }}</a>
+                  </li>
+                  {% endfor %}
+                </ul>
+              </div>
+            </li>
+            {% else %}
+            <li {% if link.active %}class="site-nav--active"{% endif %}>
+              <a href="{{ link.url }}" class="site-nav__link"><span class="site-nav__text">{{ link.title }}</span></a>
+            </li>
+            {% endif %}
+            {% endfor %}
+
+            {% if settings.searchbar %}
+            <li><a href="/search" class="site-nav__link site-nav2 site_search">{% include 'icon-search' %}</a></li>
+            {% endif %}
+
+            {% if shop.customer_accounts_enabled %}
+            {% if customer %}
+            <li><a href="/account" class="site-header__icon site-header__account {% if link.active %}site-nav--active {% endif %}"><span class="site-nav__text">{{ 'layout.customer.account' | t }}</span></a></li>
+            {% else %}
+            <li><a href="/account/login"  class="site-header__icon site-header__account {% if link.active %}site-nav--active {% endif %}"><span class="site-nav__text">{% include 'icon-login' %}</span></a></li>
+            {% endif %}
+            {% endif %}
+
+            <li><a href="/cart" class="site-nav__link site-nav2 site_cart {% if link.active %}site-nav--active {% endif %}"><span class="site-nav__text">{% include 'icon-cart' %}</span> <span id="CartCount" class="cartCount">{% if cart.item_count > -1 %}{{ cart.item_count }}{% endif %}</span></a></li>
+          </ul>
+        </nav>
+
+      </div>
+    </div>
+
+  
+
+  <div class="mobile-menu nav--mobile">
+
+    <div class="grid">
+
+      <div class="grid__item small--one-quarter medium--one-quarter text-center">
+        <a href="" class="menuToggle header-hamburger" aria-haspopup="true" aria-expanded="false" aria-controls="ariaHamburger">{% include 'icon-hamburger' %}</a>
+      </div>
+
+      <div class="grid__item small--two-quarters medium--two-quarters text-center">
+        {% if template.name == 'index' %}
+        <h1 itemscope itemtype="http://schema.org/Organization">
+          {% else %}
+          <div class="h1" itemscope itemtype="http://schema.org/Organization">
+            {% endif %}
+            <a href="/" itemprop="url" class="site-logo{% if section.settings.logo != blank %} site-header__logo-image{% endif %}">
+              {% if section.settings.logo != blank %}
+              {% capture image_size %}{{ section.settings.logo_max_width }}x{% endcapture %}
+              <img src="{{ section.settings.logo | img_url: image_size }}"
+                   srcset="{{ section.settings.logo | img_url: image_size }} 1x, {{ section.settings.logo | img_url: image_size, scale: 2 }} 2x"
+                   alt="{{ section.settings.logo.alt | default: shop.name }}"
+                   itemprop="logo">
+              {% else %}
+              {{ shop.name }}
+              {% endif %}
+            </a>
+            {% if template.name == 'index' %}
+            </h1>
+          {% else %}
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="grid__item small--one-quarter medium--one-quarter text-center">
+        <div class="header-cart__wrapper">
+          <a href="/cart" class="CartToggle header-cart">
+            {% include 'icon-cart' %}
+            <span class="header-cart__bubble cartCount">{{ cart.item_count }}</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="header-menu nav-wrapper" role="navigation">
+      <ul class="main-menu main-menu--gender">
+        {% for link in linklists[section.settings.left_main_linklist].links %}
+        {%- assign child_list_handle = link.title | handleize -%}
+        {% if menus[child_list_handle].links != blank %}
+        <li class="nav-item {% if link.active %} active{% endif %}">
+          <div class="nav-link">
+            <a href="#" class="nav-carat" aria-haspopup="true" aria-expanded="false"><span class="plus">+</span><span class="minus">-</span></a>
+            <a href="{{ link.url }}" class="nav-link nav-link2">
+              <span class="site-nav__text">{{ link.title }}</span>
+            </a>
+            <ul class="main-menu main-menu--primary accessibleNav">
+              {% for childlink in linklists[child_list_handle].links %}
+              <li {% if childlink.active %}class="nav-item nav-item--women parent"{% endif %}>
+                <a href="{{ childlink.url }}" class="nav-link">
+                  <span class="snav-link__text">{{ childlink.title | escape }}</span></a>
+                <div class="main-menu-dropdown">
+                  <ul class="site-nav__submenu site-nav__submenu1">
+                    {% for sublink in linklists[childlink.handle].links %}
+                    <li {% if sublink.active %}class="nav-item nav-item--women child"{% endif %}>
+                      <a href="{{ sublink.url }}" class="nav-link">{{ sublink.title | escape }}</a>
+                    </li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </li>
+        {% else %}
+        <li {% if link.active %}class="site-nav--active"{% endif %}>
+          <a href="{{ link.url }}" class="site-nav__link"><span class="site-nav__text">{{ link.title }}</span></a>
+        </li>
+        {% endif %}
+        {% endfor %}
+
+        {% for link in linklists[section.settings.right_main_linklist].links %}
+        {%- assign child_list_handle = link.title | handleize -%}
+        {% if menus[child_list_handle].links != blank %}
+        <li class="nav-item {% if link.active %} active{% endif %}">
+          <div class="nav-link">
+            <a href="#" class="nav-carat" aria-haspopup="true" aria-expanded="false"><span class="plus">+</span><span class="minus">-</span></a>
+            <a href="{{ link.url }}" class="nav-link nav-link2">
+              <span class="site-nav__text">{{ link.title }}</span>
+            </a>
+            <ul class="main-menu main-menu--primary accessibleNav">
+              {% for childlink in linklists[child_list_handle].links %}
+              <li {% if childlink.active %}class="nav-item nav-item--women parent"{% endif %}>
+                <a href="{{ childlink.url }}" class="nav-link">
+                  <span class="snav-link__text">{{ childlink.title | escape }}</span></a>
+                <div class="main-menu-dropdown">
+                  <ul class="site-nav__submenu site-nav__submenu1">
+                    {% for sublink in linklists[childlink.handle].links %}
+                    <li {% if sublink.active %}class="nav-item nav-item--women child"{% endif %}>
+                      <a href="{{ sublink.url }}" class="nav-link">{{ sublink.title | escape }}</a>
+                    </li>
+                    {% endfor %}
+                  </ul>
+                </div>
+              </li>
+
+              {% endfor %}
+            </ul>
+          </div>
+        </li>
+        {% else %}
+        <li {% if link.active %}class="site-nav--active"{% endif %}>
+          <a href="{{ link.url }}" class="site-nav__link"><span class="site-nav__text">{{ link.title }}</span></a>
+        </li>
+        {% endif %}
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+</header>
+</div>
+
+{% schema %}
+{
+"name": "Header",
+"settings": [
+{
+"type": "checkbox",
+"id": "fullwidth",
+"label": {
+"en": "Enable fullwidth",
+"de": "Ankündigung anzeigen",
+"fr": "Afficher l'annonce"
+}
+},
+{
+"type": "header",
+"content": "Announcement bar"
+},
+
+{
+"type": "checkbox",
+"id": "message",
+"label": {
+"en": "Show announcement",
+"de": "Ankündigung anzeigen",
+"fr": "Afficher l'annonce"
+},
+
+"default": false
+},
+{
+"type": "text",
+"id": "message_text1",
+"label": {
+"en": "Text 1",
+"de": "Text",
+"fr": "Texte"
+},
+"default": {
+"en": "Announce something here",
+"de": "Hier etwas ankündigen",
+"fr": "Annoncez quelque chose ici"
+}
+},
+{
+"type": "text",
+"id": "message_text2",
+"label": {
+"en": "Text 2",
+"de": "Text",
+"fr": "Texte"
+},
+"default": {
+"en": "Announce something here",
+"de": "Hier etwas ankündigen",
+"fr": "Annoncez quelque chose ici"
+}
+},
+{
+"type": "text",
+"id": "message_text3",
+"label": {
+"en": "Text 3",
+"de": "Text",
+"fr": "Texte"
+},
+"default": {
+"en": "Announce something here",
+"de": "Hier etwas ankündigen",
+"fr": "Annoncez quelque chose ici"
+}
+},
+{
+"type": "checkbox",
+"id": "home_page_only",
+"label": {
+"en": "Home page only",
+"de": "Nur Startseite",
+"fr": "Page d'accueil uniquement",
+"it": "Solo home page",
+"ja": "ホームページのみ",
+"es": "Solo página de inicio",
+"pt-BR": "Apenas página inicial"
+},
+"default": true
+},
+{
+     "type": "checkbox",
+     "id": "stickyheader",
+     "label": "Enable fixed header",
+    "default": false
+   },
+{
+  "type": "color",
+  "id": "color_bg",
+  "label": "Bar",
+  "default": "#000"
+},
+{
+  "type": "color",
+  "id": "color_text",
+  "label": "Text",
+  "default": "#fff"
+},
+{
+"type": "header",
+"content": "logo"
+},
+{
+"type": "radio",
+"id": "align_logo",
+"label": {
+"en": "Logo alignment",
+"de": "Logo-Ausrichtung",
+"fr": "Alignement du logo",
+"it": "Allineamento logo",
+"ja": "ロゴアラインメント",
+"es": "Alineación de logotipo",
+"pt-BR": "Alinhamento do logotipo"
+},
+"default": "left",
+"options": [
+{
+"value": "left",
+"label": {
+"en": "Left",
+"de": "Links",
+"fr": "Gauche",
+"it": "Sinistra",
+"ja": "左",
+"es": "Izquierda",
+"pt-BR": "Esquerda"
+}
+},
+{
+"value": "center",
+"label": {
+"en": "Centered",
+"de": "Mittig",
+"fr": "Centré",
+"it": "Centrato",
+"ja": "中央揃え",
+"es": "Centrada",
+"pt-BR": "Centralizado"
+}
+}
+]
+},
+{
+"type": "image_picker",
+"id": "logo",
+"label": "Logo image"
+},
+{
+"type": "range",
+"id": "logo_max_width",
+"min": 50,
+"max": 250,
+"step": 10,
+"unit": "px",
+"label": "Custom logo width",
+"default": 120
+},
+
+{
+"type": "link_list",
+"id": "left_main_linklist",
+"label": "Left Menu",
+"default": "main-menu"
+},
+{
+"type": "link_list",
+"id": "right_main_linklist",
+"label": "Right Menu",
+"default": "main-menu"
+}
+]
+}
+{% endschema %}
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "Organization",
+  "name": "{{ shop.name }}",
+  {% if section.settings.logo %}
+    {% assign image_size = section.settings.logo.width | append:'x' %}
+    "logo": "https:{{ section.settings.logo | img_url: image_size }}",
+  {% endif %}
+  "sameAs": [
+    "{{ settings.social_twitter_link }}",
+    "{{ settings.social_facebook_link }}",
+    "{{ settings.social_pinterest_link }}",
+    "{{ settings.social_instagram_link }}",
+    "{{ settings.social_tumblr_link }}",
+    "{{ settings.social_snapchat_link }}",
+    "{{ settings.social_youtube_link }}",
+    "{{ settings.social_vimeo_link }}"
+  ],
+  "url": "{{ shop.url }}{{ page.url }}"
+}
+</script>

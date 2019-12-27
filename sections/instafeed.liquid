@@ -1,0 +1,100 @@
+<div class="main-instafeed {% if section.settings.fullwidth == false %}page-width {% endif %}">
+  {% if section.settings.heading != blank %}
+  <div class="text-center instagram-title">
+    {{section.settings.heading}}
+  </div>
+  {% endif %}
+  <div id="instafeed"></div>
+</div>
+
+<script type="text/javascript">
+  var feed = new Instafeed({
+    get: 'user',
+    userId: '{{section.settings.user_id}}',
+    accessToken: '{{section.settings.access_token}}',
+    resolution: 'standard_resolution',
+    limit: 6,
+    template: '<a class="inner-insta" target="_blank" href="\{\{link\}\}" style="background-image: url\(\{\{image\}\}\)"><div class="inner_image text-center"></div><div class="inner_image text-center"><span class="like-count"><i class="fas fa-heart-circle"></i><img src="https://cdn.shopify.com/s/files/1/0023/5978/7577/t/3/assets/hearts-24.png"> &nbsp;\{\{likes\}\} </span></div></a>'
+  });
+  feed.run();
+</script>
+
+{% schema %}
+{
+  "name": {
+     "en": "Instagram Feed",
+     "de": "Instagram Feed",
+     "fr": "Flux Instagram",
+     "it": "Feed di Instagram",
+     "ja": "Instagramのフィード",
+     "es": "Feed de Instagram",
+     "pt-BR": "Instagram Feed"
+   },
+  "settings": [
+{
+        "type": "checkbox",
+        "id": "fullwidth",
+        "label": {
+          "en": "Enable fullwidth",
+          "de": "Ankündigung anzeigen",
+          "fr": "Afficher l'annonce",
+          "ja": "全幅を有効にする"
+        }
+      },
+  {
+    "type": "richtext",
+    "id": "heading",
+    "label": {
+       "en": "Heading",
+       "de": "Titel",
+       "fr": "En-tête",
+       "it": "Heading",
+       "ja": "見出し",
+       "es": "Título",
+       "pt-BR": "Título"
+     }
+  },
+  {
+    "type": "text",
+    "id": "user_id",
+    "label": {
+       "en": "User ID",
+       "de": "Benutzeridentifikation",
+       "fr": "Identifiant d'utilisateur",
+       "it": "ID utente",
+       "ja": "ユーザーID",
+       "es": "ID de usuario",
+       "pt-BR": "ID do usuário"
+     }
+  },
+  {
+    "type": "text",
+    "id": "access_token",
+    "label": {
+       "en": "Access Token",
+       "de": "Zugangstoken",
+       "fr": "Jeton d'accès",
+       "it": "Token di accesso",
+       "ja": "アクセストークン",
+       "es": "Token de acceso",
+       "pt-BR": "Token de Acesso"
+     }
+  }
+  ],
+  "presets": [
+    {
+    "name": {
+       "en": "Instagram Feed",
+       "de": "Instagram Feed",
+       "fr": "Flux Instagram",
+       "it": "Feed di Instagram",
+       "ja": "Instagramのフィード",
+       "es": "Feed de Instagram",
+       "pt-BR": "Instagram Feed"
+     },
+        "category": "instagram"
+    }
+  ]
+}
+{% endschema %}
+

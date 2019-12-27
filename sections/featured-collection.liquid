@@ -1,0 +1,320 @@
+<div data-section-id="{{ section.id }}" data-section-type="product" itemscope itemtype="http://schema.org/Product"class="homepage-collection homepage--white">
+  <meta itemprop="name" content="{{ product.title }}">
+  <meta itemprop="url" content="{{ shop.url }}{{ product.url }}">
+  <meta itemprop="image" content="{{ featured_image | img_url: '800x' }}">
+  <meta itemprop="description" content="{{ product.description | strip_html | escape }}">
+  <div class="{% if section.settings.fullwidth %}wrapper {% else %} page-width {% endif %} text-center">
+    {% if section.settings.title != blank %}
+    <h2 class="text-center home__subtitle">{{ section.settings.title | escape }}</h2>
+    {% endif %}
+    <div class="grid">
+
+      {%- assign collection = collections[section.settings.collection] -%}
+
+      {% case section.settings.grid %}
+      {% when 2 %}
+      {%- assign max_height = 530 -%}
+      {%- assign grid_item_width = 'medium-up--one-half' -%}
+      {% when 3 %}
+      {%- assign max_height = 345 -%}
+      {%- assign grid_item_width = 'small--one-half medium-up--one-third' -%}
+      {% when 4 %}
+      {%- assign max_height = 250 -%}
+      {%- assign grid_item_width = 'small--one-half medium-up--one-quarter' -%}
+      {% when 5 %}
+      {%- assign max_height = 195 -%}
+      {%- assign grid_item_width = 'small--one-half medium-up--one-fifth' -%}
+      {% endcase %}
+
+      {%- assign product_limit = section.settings.grid | times: section.settings.rows -%}
+      {% for product in collection.products limit: product_limit %}
+      <div class="grid__item {{grid_item_width}} grid__item--card">
+        <div class="grid__wrap">
+          <a href="{{ product.url | within: collection }}" class="item-link">
+            {% if product.featured_image != blank %}
+            {{ product.featured_image.src | img_url: '480x480', crop:'center'| img_tag: product.title }}
+            {% endif %}
+            <h4 class="grid__title grid__title--product">{{ product.title }}</h4>
+          </a>
+          <p class="price">
+            {% if product.compare_at_price> product.price %}
+            {% if product.price_varies %}
+            {%- assign sale_price = product.price | money -%}
+            {{ 'products.product.on_sale_from_html' | t: price: sale_price }}
+            {% else %}
+            {{ product.price | money }}
+            <span class="compare-at"> {{ product.compare_at_price | money }}</span>
+            {% endif %}
+            {% else %}
+
+            {% if product.price_varies %}
+            {%- assign price = product.price | money -%}
+            {{ 'products.product.from_text_html' | t: price: price }}
+            {% else %}
+            {{ product.price | money }}
+            {% endif %}
+
+            {% endif %}
+          </p>
+          <div class="hover_box">
+          {% if section.settings.quick_view != blank %}
+          <div class="mobile-hide">
+          <div class="quick-view-button quick-view-btn hover-btn" style="visibility: hidden"><button class="quick-view" data-handle="{{ product.handle }}">Quick View</button></div>
+          </div>
+            {% else %}
+          
+            <form action="/cart/add" style="visibility: hidden" data-productid="{{product.id}}" method="post" enctype="multipart/form-data" class="product-form hover-btn product-form-{{ section.id }}{% unless section.settings.show_variant_labels %} product-form--hide-variant-labels{% endunless %}" data-section="{{ section.id }}">
+              {% unless product.has_only_default_variant %}
+              {% for option in product.options_with_values %}
+              <div class="selector-wrapper js product-form__item">
+                <select class="single-option-selector single-option-selector-{{ section.id }} product-form__input" id="SingleOptionSelector-{{ forloop.index0 }}" data-index="option{{ forloop.index }}" name="id" data-productid="{{product.id}}">
+                  {% for value in option.values %}
+                  <option value="{{ value | escape }}"{% if option.selected_value == value %} selected="selected"{% endif %}>{{ value }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              {% endfor %}
+              {% endunless %}
+
+              <select name="id" id="ProductSelect-{{ product.id }}" data-product="{{ product.id }}" class="product-form__variants no-js">
+                {% for variant in product.variants %}
+                {% if product.options.size >= 1 %}
+                <option {% if variant == product.selected_or_first_available_variant %} selected="selected" {% endif %} data-value="{{ variant.title }}" value="{{ variant.id }}">
+                  {{ variant.title }}
+                </option>
+                {% else %}
+                <option disabled="disabled">{{ variant.title }} - {{ 'products.product.sold_out' | t }}</option>
+                {% endif %}
+                {% endfor %}
+              </select>
+
+              <input type="hidden" id="Quantity" name="quantity" value="1" min="1" class="product-form__input" pattern="[0-9]*">
+              
+              <div class="add-to-cart">
+                <div class="product-form-submit-wrap">
+                  {% if product.available %}
+                  <input type="submit" value="{{ 'products.product.add_to_cart' | t }}" class="add_to_cart {% comment %}{% if product.available and product.variants.size > 1 %} half-size-btn {% endif %}{% endcomment %}" />
+                  <div class="add-to-cart-loader"></div>
+                  {% capture cart_link %}
+                  <a href="/cart">{{ 'products.product.cart_link' | t }}</a>
+                  {% endcapture %}
+                  {% capture continue_link %}
+                  <a href="/collections/all">{{ 'products.product.continue_link' | t }}</a>
+                  {% endcapture %}
+                  {% capture checkout_link %}
+                  <a href="/checkout">{{ 'products.product.checkout_link' | t }}</a>
+                  {% endcapture %}
+                  {% capture product_item %}
+                  <span class='added-product-name'></span>
+                  {% endcapture %}
+
+                  {% else %}
+                  <input type="button" class="disabled sold-out" disabled="disabled" value="{{ 'products.product.sold_out' | t }}" />
+                  {% endif %}
+                </div>
+
+              </div>
+            </form>
+
+          
+            {% endif %}
+            </div>
+        </div>
+
+      </div>
+
+
+      {% else %}
+
+
+      {% for i in (1..product_limit) %}
+      <div class="grid__item {{ grid_item_width }} grid__item--card ">
+        <div class="grid__wrap">
+          <a href="#"  class="item-link">
+            {% capture current %}{% cycle 1, 2, 3 %}{% endcapture %}
+            {{ 'product-' | append: current | placeholder_svg_tag: 'placeholder-svg placeholder-svg--small' }}
+
+            <p>
+              {{ 'homepage.onboarding.product_title' | t }}
+            </p>
+          </a>
+
+          <p class="price">{{ 1999 | money }}</p>
+
+          <div class="hover_box">
+            <div class="add-to-cart">
+              <div class="product-form-submit-wrap">
+                <input type="submit" value="{{ 'products.product.add_to_cart' | t }}" class="add_to_cart" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+
+
+      {% endfor %}
+
+    </div>
+  
+        {% if section.settings.show_view_all %}
+        <div class="text-center">
+          <a href="{{ collection.url }}" class="btn" aria-label="{{ 'collections.general.view_all_label' | t: collection_name: collection.title }}">
+            View All
+          </a>
+        </div>
+        {% endif %}
+  </div>
+</div>
+
+{% unless product == empty %}
+<script type="application/json" id="ProductJson-{{ section.id }}">
+    {{ product | json }}
+</script>
+{% endunless %}
+
+
+{% schema %}
+{
+"name": {
+      "en": "Featured Collection",
+      "de": "Vorgestellte Sammlung",
+      "es": "Colección destacada",
+      "fr": "Collection en vedette",
+      "it": "Collezione in primo piano",
+      "ja": "注目のコレクション",
+      "pt-BR": "Colecção em destaque"
+    },
+"settings": [
+  {
+    "type": "checkbox",
+    "id": "fullwidth",
+    "label": {
+      "en": "Enable fullwidth",
+      "de": "Ankündigung anzeigen",
+      "fr": "Afficher l'annonce",
+      "ja": "全幅を有効にする"
+    }
+  },
+  {
+  "type": "text",
+  "id": "title",
+  "label": {
+          "en": "Heading",
+           "de": "Titel",
+           "fr": "En-tête",
+           "it": "Heading",
+           "ja": "見出し",
+           "es": "Título",
+           "pt-BR": "Título"
+  },
+  "default": {
+    "en": "Featured Collection",
+    "de": "Vorgestellte Sammlung",
+    "es": "Colección destacada",
+    "fr": "Collection en vedette",
+    "it": "Collezione in primo piano",
+    "ja": "注目のコレクション",
+    "pt-BR": "Colecção em destaque"
+  }
+  },
+  {
+  "id": "collection",
+  "type": "collection",
+  "label": {
+  "de": "Kategorie",
+  "en": "Collection",
+  "es": "Colección",
+  "fr": "Collection",
+  "it": "Collezione",
+  "ja": "コレクション",
+  "pt-BR": "Coleção"
+  }
+  },
+  {
+  "type": "range",
+  "id": "grid",
+  "label": {
+    "de": "Produkte pro Reihe",
+  "en": "Products per row",
+  "es": "Productos por fila",
+  "fr": "Produits par rangée",
+  "it": "Prodotti per riga",
+  "ja": "行ごとの商品",
+  "pt-BR": "Produtos por linha"
+  },
+  "min": 2,
+  "max": 5,
+  "step": 1,
+  "default": 3
+  },
+  {
+  "type": "range",
+  "id": "rows",
+  "label":{
+    "de": "Reihen",
+  "en": "Rows",
+  "es": "filas",
+  "fr": "Rangées",
+  "it": "Righe",
+  "ja": "行",
+  "pt-BR": "linhas"
+  },
+  "min": 1,
+  "max": 5,
+  "step": 1,
+  "default": 2
+  },
+  {
+  "type": "checkbox",
+  "id": "quick_view",
+  "label": {
+    "de": "Produkt-Schnellansicht aktivieren",
+  "en": "Enable Product Quick View",
+  "es": "Habilitar vista rápida del producto",
+  "fr": "Activer Aperçu rapide du produit",
+  "it": "Abilita la visualizzazione rapida del prodotto",
+  "ja": "製品クイックビューを有効にする",
+  "pt-BR": "Ativar visualização rápida do produto"
+  }
+  },
+  {
+  "type": "checkbox",
+  "id": "show_view_all",
+  "label":{
+    "de": "Schaltfläche Alle anzeigen anzeigen",
+  "en": "EnShow View all button",
+  "es": "Mostrar el botón Ver todo",
+  "fr": "Afficher tout le bouton",
+  "it": "Mostra Visualizza tutti i pulsanti",
+  "ja": "表示すべて表示ボタン",
+  "pt-BR": "Mostrar o botão Ver todos"
+  },
+  "default": false
+  }
+],
+"presets": [
+    {
+    "name": {
+      "en": "Featured Collection",
+      "de": "Vorgestellte Sammlung",
+      "es": "Colección destacada",
+      "fr": "Collection en vedette",
+      "it": "Collezione in primo piano",
+      "ja": "注目のコレクション",
+      "pt-BR": "Colecção em destaque"
+    },
+    "category": {
+      "de": "Kategorie",
+    "en": "Collection",
+    "es": "Colección",
+    "fr": "Collection",
+    "it": "Collezione",
+    "ja": "コレクション",
+    "pt-BR": "Coleção"
+    }
+    }
+  ]
+}
+
+{% endschema %}

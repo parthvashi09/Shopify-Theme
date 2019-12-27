@@ -1,0 +1,107 @@
+{% comment %}
+The contents of the product.liquid template can be found in /sections/product-template.liquid
+{% endcomment %}
+{% section 'product_template' %}
+
+
+{% comment %}{% section 'product-image-with-text' %}{% endcomment %}
+{% section 'related-products' %}
+{% include 'recently-viewed'%}
+
+<script>
+  // Override default values of shop.strings for each template.
+  // Alternate product templates can change values of
+  // add to cart button, sold out, and unavailable states here.
+  theme.productStrings = {
+    addToCart: {{ 'products.product.add_to_cart' | t | json }},
+    soldOut: {{ 'products.product.sold_out' | t | json }},
+    unavailable: {{ 'products.product.unavailable' | t | json }}
+  }
+</script>
+
+{% assign current_variant = product.selected_or_first_available_variant %}
+
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org/",
+  "@type": "Product",
+  "name": "{{ product.title | escape }}",
+  "url": "{{ shop.url }}{{ product.url }}",
+  {%- if product.featured_image -%}
+    {%- assign image_size = product.featured_image.width | append: 'x' -%}
+    "image": [
+      "https:{{ product.featured_image.src | img_url: image_size }}"
+    ],
+  {%- endif -%}
+  "description": "{{ product.description | strip_html | escape }}",
+  {%- if current_variant.sku != blank -%}
+    "sku": "{{ current_variant.sku }}",
+  {%- endif -%}
+  "brand": {
+    "@type": "Thing",
+    "name": "{{ product.vendor | escape }}"
+  },
+  "offers": [
+    {%- for variant in product.variants -%}
+      {
+        "@type" : "Offer",
+        {%- if variant.sku != blank -%}
+          "sku": "{{ variant.sku }}",
+        {%- endif -%}
+        "availability" : "http://schema.org/{% if product.available %}InStock{% else %}OutOfStock{% endif %}",
+        "price" : "{{ variant.price | divided_by: 100.00 }}",
+        "priceCurrency" : "{{ shop.currency }}",
+        "url" : "{{ shop.url }}{{ variant.url }}"
+      }{% unless forloop.last %},{% endunless %}
+    {%- endfor -%}
+  ]
+}
+</script>
+
+{% assign option_name = 'Color' %}
+
+{% if product.options contains option_name %}
+
+<script>
+  // Grabbing product thumbnails
+  // Covers: Editions, Launchpad Star, Lookbook, Kickstand, Startup, Simple, Radiance, Minimal, Supply, New Standard and many more.
+  var thumbnails = jQuery('img[src*="/products/"]') /* All product images */
+  .not('#related-products img')                   /* Except related products, thumbnails not clickable */
+  .not('a[href^="/collections/"] img')            /* Except related products */
+  .not('a[href^="/products/"] img')               /* Except mini-cart products */
+  .not('header img')                              /* Except mini-cart products, thumbnails not clickable */
+  .not('#drawer img')                             /* Except mini-cart products, thumbnails not clickable, in Simple theme. */
+  .not(':first');                                 /* Except first one, i.e the main image */
+
+  var optionSelect;
+  {% assign option_index = 0 %}
+  {% for option in product.options %}
+  {% if option == option_name %}
+  {% assign option_index = forloop.index0 %}
+  {% endif %}
+  {% endfor %}
+
+  {% if product.options.size == 1 %}
+  optionSelect = '.single-option-selector';
+  {% else %}
+  optionSelect = 'label:contains({{ option_name }}) + .single-option-selector';
+  {% endif %}
+
+  jQuery('form[action="/cart/add"]').on('change', optionSelect, function() {
+    var optionValue = $(this).val();
+    thumbnails.each(function() {
+      var wrapper = $(this);
+      while ( wrapper.parent().children().length === 1 ) {
+        wrapper = wrapper.parent();
+      }
+      if ( jQuery(this).attr('alt') === optionValue ) {
+        wrapper.show();
+      }
+      else {
+        wrapper.hide();
+      }
+    });
+  });
+</script>
+
+{% endif %}

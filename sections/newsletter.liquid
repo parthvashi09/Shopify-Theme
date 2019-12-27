@@ -1,0 +1,520 @@
+<style>
+  .newsletter-wrapper--{{ section.id }} input[type='email']::-webkit-input-placeholder {
+    color: {{ section.settings.text_color }};
+  }
+  .newsletter-wrapper--{{ section.id }} input[type='email']::-moz-placeholder {
+    color: {{ section.settings.text_color }};
+  }
+  .newsletter-wrapper--{{ section.id }} input[type='email']:-ms-input-placeholder {
+    color: {{ section.settings.text_color }};
+  }
+  .newsletter-wrapper--{{ section.id }} input[type='email']::placeholder {
+    color: {{ section.settings.text_color }};
+  }
+  .newsletter-wrapper--{{ section.id }} .input-group--underline {
+    border-bottom: 2px solid {{ section.settings.text_color }};
+  }
+  .newsletter-wrapper--{{ section.id }} .icon {
+    fill: {{ section.settings.text_color }};
+  }
+  .newsletter-wrapper--{{ section.id }} .btn--newsletter__submit {
+    color: {{ section.settings.text_color }};
+    fill: {{ section.settings.text_color }};
+  }
+  .newsletter-wrapper--{{ section.id }} .form-success {
+    color: {{ section.settings.text_color }};
+  }
+  .subscribe-subheading p{
+    color:{{ section.settings.sub_heading_color }};
+  }
+  .home__subtitle{
+  color:{{ section.settings.heading_color }};
+  }
+</style>
+
+{% if section.settings.image != blank %}
+  <style>
+    .hero--{{ section.id }} {
+      background-position: {{ section.settings.alignment }};
+    }
+  </style>
+{% endif %}
+
+{% if section.settings.image == blank %}
+  <style>
+    .hero-copy{
+      background-color: {{ section.settings.background-color }};
+    }
+  </style>
+{% endif %}
+<div class="hero overlay_section newsletter-wrapper newsletter-wrapper--{{ section.id }} hero-copy  hero--{{ section.settings.hero_size }}{% if section.settings.title != blank or section.settings.text != blank or section.settings.button_label != blank %} hero__overlay{% endif %} box ratio-container lazyload js"
+     {% if section.settings.image  %}
+     data-bgset="{% include 'bgset', image: section.settings.image %}"
+     data-sizes="auto"
+     data-parent-fit="cover"
+     style="background-position: {{ section.settings.alignment }};{% if section.settings.image != blank %} background-image: url('{{ section.settings.image | img_url: '300x300' }});{% endif %}"
+     {% endif %}>
+  {% if section.settings.image == blank %}
+    <div class="placeholder-background">
+    </div>
+  {% endif %}
+  <div class="hero__inner">
+    <div class="page-width text-center">
+      {% form 'customer' %}
+      <h2 class="newsletter__heading home__subtitle">{{ section.settings.title | escape }}</h2>
+      {% unless section.settings.text == blank %}
+        <div class="subscribe-subheading rte">{{ section.settings.text }}</div>
+      {% endunless %}
+      <input type="hidden" name="contact[tags]" value="newsletter">
+      <div class="input-group" data-animate>
+        <input type="email" value="{% if customer %}{{ customer.email }}{% endif %}" placeholder="enter your email" name="contact[email]" class="input-group__field" id="EmailField{{ section.id }}"  autocorrect="off" autocapitalize="off">
+        <div class="input-group__btn input-group__btn--newsletter">
+          <button type="submit" class="btn--newsletter__submit">
+          SUBMIT
+          </button>
+        </div>
+      </div>
+      <div class="newsletter__message" aria-role="alert">
+        {% if form.posted_successfully? %}
+          <p class="form-success" aria-role="alert">
+            {% unless section.settings.success_message == blank %}
+              {{ section.settings.success_message | escape }}
+            {% endunless %}
+          </p>
+        {% endif %}
+        {{ form.errors | default_errors }}
+      </div>
+    {% endform %}
+    </div>
+  </div>
+</div>
+<noscript>
+  <div class="hero hero--{{ section.settings.hero_size }}{% if section.settings.title != blank or section.settings.text != blank or section.settings.button_label != blank %} hero__overlay{% endif %}"{% if section.settings.image %} style="background-image: url('{{ section.settings.image | img_url: '2048x' }}'); background-position: center {{ section.settings.alignment }};"{% endif %}></div>
+</noscript>
+{% schema %}
+{
+"name": {
+"en": "Newsletter",
+"de": "Newsletter",
+"fr": "Newsletter",
+"it": "Newsletter",
+"ja": "ニュースレター",
+"es": "Boletín",
+"pt-BR": "Newsletter"
+},
+"class": "index-section index-section--image-with-text-overlay",
+"settings": [
+{
+"type": "select",
+"id": "hero_size",
+"label": {
+"en": "Section height",
+"de": "Höhe des Bereichs",
+"fr": "Taille de la section",
+"it": "Altezza sezione",
+"ja": "セクションの高さ",
+"es": "Altura de la sección",
+"pt-BR": "Altura da seção"
+},
+"default": "medium",
+"options": [
+{
+"label": {
+"en": "Small",
+"de": "Klein",
+"fr": "Petite",
+"it": "Piccolo",
+"ja": "小",
+"es": "Pequeña",
+"pt-BR": "Pequeno"
+},
+"value": "small"
+},
+{
+"label": {
+"en": "Medium",
+"de": "Mittel",
+"fr": "Moyenne",
+"it": "Medio",
+"ja": "中",
+"es": "Mediana",
+"pt-BR": "Médio"
+},
+"value": "medium"
+},
+{
+"label": {
+"en": "Large",
+"de": "Groß",
+"fr": "Grande",
+"it": "Grande",
+"ja": "大",
+"es": "Grande",
+"pt-BR": "Grande"
+},
+"value": "large"
+},
+{
+"label": {
+"en": "Extra Large",
+"de": "Extra groß",
+"fr": "Très grande",
+"it": "Molto grande",
+"ja": "特大",
+"es": "Extra grande",
+"pt-BR": "Muito grande"
+},
+"value": "x-large"
+}
+]
+},
+{
+"type": "image_picker",
+"id": "image",
+"label": {
+"en": "Image",
+"de": "Foto",
+"fr": "Image",
+"it": "Immagine",
+"ja": "画像",
+"es": "Imagen",
+"pt-BR": "Imagem"
+}
+},
+{
+"type": "select",
+"id": "alignment",
+"label": {
+"en": "Image alignment",
+"de": "Fotoausrichtung",
+"fr": "Alignement de l'image",
+"it": "Allineamento immagine",
+"ja": "画像アラインメント",
+"es": "Alineación de imagen",
+"pt-BR": "Alinhamento da imagem"
+},
+"default": "Middle",
+"options": [
+{
+"label": {
+"de": "Oben links",
+"en": "Top left",
+"es": "Arriba a la izquierda",
+"fr": "En haut à gauche",
+"it": "In alto a sinistra",
+"ja": "左上",
+"pt-BR": "Canto superior esquerdo"
+},
+"value": "top left"
+},
+{
+"label": {
+"de": "Oben in der Mitte",
+"en": "Top middle",
+"es": "Medio superior",
+"fr": "Haut moyen",
+"it": "In alto al centro",
+"ja": "上部中央",
+"pt-BR": "Meio superior"
+},
+"value": "top middle"
+},
+{
+"label":{
+"de": "Oben rechts",
+"en": "Top right",
+"es": "Parte superior derecha",
+"fr": "En haut à droite",
+"it": "In alto a destra",
+"ja": "右上",
+"pt-BR": "Canto superior direito"
+},
+"value": "top right"
+},
+{
+"label": {
+"de": "Oben rechts",
+"en": "Top right",
+"es": "Parte superior derecha",
+"fr": "En haut à droite",
+"it": "In alto a destra",
+"ja": "右上",
+"pt-BR": "Canto superior direito"
+},
+"value": "Middle left"
+},
+{
+"label": {
+"de": "Mitte",
+"en": "Middle",
+"es": "Medio",
+"fr": "Milieu",
+"it": "Mezza",
+"ja": "中間",
+"pt-BR": "Meio"
+},
+"value": "Middle"
+},
+{
+"label": {
+"de": "Mitte rechts",
+"en": "Middle right",
+"es": "Medio derecho",
+"fr": "Milieu droit",
+"it": "Centro destra",
+"ja": "右中央",
+"pt-BR": "Meio direito"
+},
+"value": "Middle right"
+},
+{
+"label": {
+"de": "Unten links",
+"en": "Bottom left",
+"es": "Abajo a la izquierda",
+"fr": "En bas à gauche",
+"it": "In basso a sinistra",
+"ja": "左下の",
+"pt-BR": "Inferior esquerdo"
+},
+"value": "bottom left"
+},
+{
+"label": {
+"de": "Unten in der Mitte",
+"en": "Bottom middle",
+"es": "Medio inferior",
+"fr": "En bas au milieu",
+"it": "In basso a metà",
+"ja": "下中央",
+"pt-BR": "Meio inferior"
+},
+"value": "bottom Middle"
+},
+{
+"label": {
+"de": "Unten rechts",
+"en": "Bottom right",
+"es": "Abajo a la derecha",
+"fr": "En bas à droite",
+"it": "In basso a destra",
+"ja": "右下",
+"pt-BR": "Canto inferior direito"
+},
+"value": "bottom right"
+}
+]
+},
+{
+"type": "header",
+"content": "Text"
+},
+{
+"type": "text",
+"id": "title",
+"label": {
+"en": "Heading",
+"de": "Titel",
+"fr": "En-tête",
+"it": "Heading",
+"ja": "見出し",
+"es": "Título",
+"pt-BR": "Título"
+},
+"default": {
+"en": "Talk about your brand",
+"de": "Reden Sie über Ihre Marke",
+"fr": "Parlez de votre marque",
+"it": "Parla del tuo brand",
+"ja": "あなたのブランドについて語る",
+"es": "Habla de tu marca",
+"pt-BR": "Fale sobre a sua marca"
+}
+},
+{
+"type": "richtext",
+"id": "text",
+"label": {
+"en": "Text",
+"de": "Text",
+"fr": "Texte",
+"it": "Testo",
+"ja": "テキスト",
+"es": "Texto",
+"pt-BR": "Texto"
+},
+"default": {
+"en": "<p>Use this text to share information about your brand with your customers. Describe a product, share announcements, or welcome customers to your store.</p>",
+"de": "<p>Nutzen Sie diesen Text, um Infos über Ihre Marke mitzuteilen. Beschreiben Sie ein Produkt, kündigen Sie etwas an oder heißen Sie Kunden willkommen.</p>",
+"fr": "<p>Utilisez ce texte pour partager des informations sur votre marque. Décrivez un produit, partagez des annonces, ou souhaitez la bienvenue à vos clients.</p>",
+"it": "<p>Utilizza questo testo per condividere le informazioni sul tuo brand con i tuoi clienti. Descrivi un prodotto, condividi gli annunci o dai il benvenuto ai clienti nel tuo negozio.</p>",
+"ja": "<p>このテキストを使用して、あなたのブランドに関する情報をお客様と共有します。商品を説明したり、告知の共有をしたり、あるいはあなたのストアのお客様を歓迎します。</p>",
+"es": "<p>Usa este texto para compartir información sobre tu marca con tus clientes. Describe un producto, comparte anuncios o recibe clientes en tu tienda.</p>",
+"pt-BR": "<p>Use este texto para compartilhar informações sobre sua marca com seus clientes. Descreva um produto, compartilhe novidades ou receba os clientes em sua loja.</p>"
+}
+},
+{
+"type": "select",
+"id": "text_size",
+"label": {
+"en": "Text size",
+"de": "Textgröße",
+"fr": "Taille du texte",
+"it": "Dimensione testo",
+"ja": "文字サイズ",
+"es": "Tamaño del texto",
+"pt-BR": "Tamanho do texto"
+},
+"default": "medium",
+"options": [
+{
+"label": {
+"en": "Medium",
+"de": "Mittel",
+"fr": "Moyenne",
+"it": "Medio",
+"ja": "中",
+"es": "Mediano",
+"pt-BR": "Médio"
+},
+"value": "medium"
+},
+{
+"label": {
+"en": "Large",
+"de": "Groß",
+"fr": "Grande",
+"it": "Grande",
+"ja": "大",
+"es": "Grande",
+"pt-BR": "Grande"
+},
+"value": "large"
+}
+]
+},
+{
+"type": "checkbox",
+"id": "use_second_button",
+"label": {
+"en": "Use secondary button style",
+"de": "Verwenden Sie den sekundären Tastenstil",
+"fr": "Utiliser le style de bouton secondaire",
+"it": "Usa lo stile del pulsante secondario",
+"ja": "二次ボタンスタイルを使用",
+"es": "Usar estilo de botón secundario",
+"pt-BR": "Use o estilo do botão secundário"
+},
+"default": false
+},
+{
+"type": "text",
+"id": "button_label",
+"label": {
+"en": "Button label",
+"de": "Button-Etikett",
+"fr": "Texte du bouton",
+"it": "Etichetta pulsante",
+"ja": "ボタンラベル",
+"es": "Etiqueta de botón",
+"pt-BR": "Etiqueta do botão"
+}
+},
+{
+"type": "url",
+"id": "button_link",
+"label": {
+"en": "Button link",
+"de": "Button-Link",
+"fr": "Lien du bouton",
+"it": "Link pulsante",
+"ja": "ボタンリンク",
+"es": "Enlace de botón",
+"pt-BR": "Link do botão"
+}
+},
+{
+"type": "header",
+"content": "Overlay"
+},
+{
+"type": "color",
+"id": "heading_color",
+"label": {
+"en": "Heading color",
+"de": "Titel Farbe",
+"fr": "En-tête titre",
+"it": "Heading colore",
+"ja": "見出し色",
+"es": "color Título",
+"pt-BR": "Cor título"
+},
+"default": "#000"
+},
+{
+"type": "color",
+"id": "text_color",
+"label": {
+"en": "Text color",
+"de": "Text Farbe",
+"fr": "texte titre",
+"it": "testo colore",
+"ja": "テキスト色",
+"es": "texto Título",
+"pt-BR": "texto título"
+},
+"default": "#000"
+},
+{
+"type": "color",
+"id": "sub_heading_color",
+"label": {
+"en": "Sub heading color",
+"de": "Sub Titel Farbe",
+"fr": "sous En-tête titre",
+"it": "sub heading colore",
+"ja": "サブ見出し色",
+"es": "color sub Título",
+"pt-BR": "Cor sub título"
+},
+"default": "#000"
+},
+{
+"type": "color",
+"id": "background-color",
+"label": {
+"en": "Background color",
+"de": "Hintergrundfarbe",
+"fr": "Couleur de fond",
+"it": "Colore di sfondo",
+"ja": "背景色",
+"es": "Color de fondo",
+"pt-BR": "Cor de fundo"
+},
+"default": "#e5e5e5"
+}
+],
+"presets": [
+{
+"name": {
+"en": "Newsletter",
+"de": "Newsletter",
+"fr": "Newsletter",
+"it": "Newsletter",
+"ja": "ニュースレター",
+"es": "Boletín",
+"pt-BR": "Newsletter"
+},
+"category": {
+"en": "Image",
+"de": "Foto",
+"fr": "Image",
+"it": "Immagine",
+"ja": "画像",
+"es": "Imagen",
+"pt-BR": "Imagem"
+}
+}
+]
+}
+{% endschema %}

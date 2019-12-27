@@ -1,0 +1,162 @@
+  <div  class="shopify-section section-clauses"><!-- /sections/clauses.liquid -->
+
+  {% case section.settings.grid %}
+      {% when 2 %}
+        {%- assign grid_item_width = 'medium-up--one-half' -%}
+      {% when 3 %}
+        {%- assign grid_item_width = 'medium-up--one-third' -%}
+      {% when 4 %}
+        {%- assign grid_item_width = 'medium-up--one-quarter' -%}
+    {% endcase %}
+
+  <div   data-section-type="clauses">
+    <div class="{% if section.settings.fullwidth %}wrapper {% else %} page-width {% endif %}">
+    <div class="grid">
+    {% for block in section.blocks %}
+      <div class="grid__item {{grid_item_width}}">
+              <div class="clause-item">
+                {% if block.settings.image != blank %}
+              {% capture img_id %}FeatureRowImage-{{ section.id }}{% endcapture %}
+              {% capture wrapper_id %}FeatureRowImageWrapper-{{ section.id }}{% endcapture %}
+              {%- assign img_url = block.settings.image | img_url: '1x1' | replace: '_1x1.', '_{width}x.' -%}
+              {% include 'image-style' with image: block.settings.image, width: 30, small_style: true, wrapper_id: wrapper_id, img_id: img_id %}
+                  <img id="{{ img_id }}"
+                       class="feature-row__image lazyload"
+                       src="{{ block.settings.image | img_url: 'small' }}"
+                       data-src="{{ img_url }}"
+                       data-aspectratio="{{ block.settings.image.aspect_ratio }}"
+                       data-sizes="auto"
+                       alt="{{ block.settings.image.alt | escape }}">
+
+              <noscript>
+                {{ section.settings.image_1 | img_url: 'small', scale: 2 | img_tag: section.settings.image_1.alt, 'feature-row__image' }}
+              </noscript>
+              {% else %}
+              {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+              {% endif %}
+                <span class="clause-item__text">{{ block.settings.title }}</span>
+              </div>
+            </div>
+            {% endfor %}
+        </div>
+      </div>
+    </div>
+
+
+  </div>
+
+  {% schema %}
+    {
+      "name": {
+         "en": "Clauses Section",
+         "de": "Abschnitt Abschnitt",
+         "fr": "Section des clauses",
+         "it": "Sezione di clausole",
+         "ja": "条項セクション",
+         "es": "Sección de cláusulas",
+         "pt-BR": "Seção de Cláusulas"
+       },
+      "class": "index-section",
+      "settings":[
+        {
+        "type": "checkbox",
+        "id": "fullwidth",
+        "label": {
+            "en": "Enable fullwidth",
+            "de": "Ankündigung anzeigen",
+            "fr": "Afficher l'annonce",
+            "ja": "全幅を有効にする"
+            }
+        },
+        {
+          "type": "range",
+          "id": "grid",
+          "label": {
+            "en": "Products per row",
+            "de": "Produkte per Reihe",
+            "fr": "Produits par rangée",
+            "it": "Prodotti per riga",
+            "ja": "行あたりの商品数",
+            "es": "Productos por fila",
+            "pt-BR": "Produtos por linha"
+          },
+          "min": 2,
+          "max": 4,
+          "step": 1,
+          "default": 3
+        }
+      ],
+      "blocks": [
+        {
+          "type": "image",
+          "name":"Clauses",
+          "settings": [
+          {
+          "type": "image_picker",
+          "id": "image",
+          "label": {
+            "en": "Image",
+            "de": "Foto",
+            "fr": "Image",
+            "it": "Immagine",
+            "ja": "画像",
+            "es": "Imagen",
+            "pt-BR": "Imagem"
+          }
+          },  
+            {
+            "type": "text",
+            "id": "title",
+            "label": {
+               "en": "Heading",
+               "de": "Titel",
+               "fr": "En-tête",
+               "it": "Heading",
+               "ja": "見出し",
+               "es": "Título",
+               "pt-BR": "Título"
+             },
+             "default": {
+                "en": "Talk about your brand",
+                "de": "Reden Sie über Ihre Marke",
+                "fr": "Parlez de votre marque",
+                "it": "Parla del tuo brand",
+                "ja": "あなたのブランドについて語る",
+                "es": "Habla de tu marca",
+                "pt-BR": "Fale sobre a sua marca"
+              }
+            }
+          ]
+        }
+      ],
+
+      "presets": [
+      {
+      "name": {
+         "en": "Clauses Section",
+         "de": "Abschnitt Abschnitt",
+         "fr": "Section des clauses",
+         "it": "Sezione di clausole",
+         "ja": "条項セクション",
+         "es": "Sección de cláusulas",
+         "pt-BR": "Seção de Cláusulas"
+       },
+       "category": {
+     "en": "Promotional",
+     "de": "Werbeartikel",
+     "fr": "Promotionnelle",
+     "it": "promozionale",
+     "ja": "プロモーション",
+     "es": "promocional",
+     "pt-BR": "promocional"
+   }
+      }
+      ]
+    }
+  {% endschema %}
+
+  {% stylesheet %}
+  {% endstylesheet %}
+
+  {% javascript %}
+  {% endjavascript %}

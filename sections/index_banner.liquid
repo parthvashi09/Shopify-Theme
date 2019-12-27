@@ -1,0 +1,220 @@
+<div class="{% if section.settings.fullwidth %}wrapper {% else %} page-width {% endif %}">
+  <div class="grid">
+    <div class="grid__item medium-up--one-half Banner-men">
+      <div class="index-banner-coll">
+        <a href="{{ section.settings.link1 }}">
+          <div class="feature-row__item">
+            {% if section.settings.image_1 != blank %}
+            {% capture img_id %}FeatureRowImage-{{ section.id }}{% endcapture %}
+            {% capture wrapper_id %}FeatureRowImageWrapper-{{ section.id }}{% endcapture %}
+            {%- assign img_url = section.settings.image_1 | img_url: '1x1' | replace: '_1x1.', '_{width}x.' -%}
+            {% include 'image-style' with image: section.settings.image_1, width: 545, height: 545, small_style: true, wrapper_id: wrapper_id, img_id: img_id %}
+            <div id="{{ wrapper_id }}" class="feature-row__image-wrapper js">
+              <div style="padding-top:{{ 1 | divided_by: section.settings.image_1.aspect_ratio | times: 100}}%;">
+                <img id="{{ img_id }}"
+                     class="feature-row__image lazyload"
+                     src="{{ section.settings.image_1 | img_url: '200x200' }}"
+                     data-src="{{ img_url }}"
+                     data-widths="[180, 360, 540, 720, 900, 1080, 1296, 1512, 1728, 2048]"
+                     data-aspectratio="{{ section.settings.image_1.aspect_ratio }}"
+                     data-sizes="auto"
+                     alt="{{ section.settings.image_1.alt | escape }}">
+              </div>
+            </div>
+            <noscript>
+              {{ section.settings.image_1 | img_url: '600x600', scale: 2 | img_tag: section.settings.image_1.alt, 'feature-row__image' }}
+            </noscript>
+            {% else %}
+            {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+            {% endif %}
+          </div>
+        </a>
+        <div class="content--bottomed">
+          <div class="text-center preventOverflowContent">
+            <span class="btn btn--white uppercase btn--large"><a href="{{ section.settings.link1 }}">{{ section.settings.men_button }}</a></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="grid__item medium-up--one-half Banner-women">
+      <div class="index-banner-coll">
+        <a href="{{ section.settings.link2 }}">
+          <div class="feature-row__item">
+            {% if section.settings.image_2 != blank %}
+            {% capture img_id %}FeatureRowImage-{{ section.id }}{% endcapture %}
+            {% capture wrapper_id %}FeatureRowImageWrapper-{{ section.id }}{% endcapture %}
+            {%- assign img_url = section.settings.image_2 | img_url: '1x1' | replace: '_1x1.', '_{width}x.' -%}
+            {% include 'image-style' with image: section.settings.image_2, width: 545, height: 545, small_style: true, wrapper_id: wrapper_id, img_id: img_id %}
+            <div id="{{ wrapper_id }}" class="feature-row__image-wrapper js">
+              <div style="padding-top:{{ 1 | divided_by: section.settings.image_2.aspect_ratio | times: 100}}%;">
+                <img id="{{ img_id }}"
+                     class="feature-row__image lazyload"
+                     src="{{ section.settings.image_2 | img_url: '200x200' }}"
+                     data-src="{{ img_url }}"
+                     data-widths="[180, 360, 540, 720, 900, 1080, 1296, 1512, 1728, 2048]"
+                     data-aspectratio="{{ section.settings.image_2.aspect_ratio }}"
+                     data-sizes="auto"
+                     alt="{{ section.settings.image_2.alt | escape }}">
+              </div>
+            </div>
+            <noscript>
+              {{ section.settings.image_2 | img_url: '600x600', scale: 2 | img_tag: section.settings.image_2.alt, 'feature-row__image' }}
+            </noscript>
+            {% else %}
+            {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+            {% endif %}
+          </div>
+        </a>
+        <div class="content--bottomed">
+          <div class="text-center preventOverflowContent">
+            <span class="btn btn--white uppercase btn--large"><a href="{{ section.settings.link2 }}">{{ section.settings.test_button }}</a></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% schema %}
+{
+"name": "Index Banner",
+"settings": [
+{
+"type": "checkbox",
+"id": "fullwidth",
+"label": {
+"en": "Enable fullwidth",
+"de": "Ankündigung anzeigen",
+"fr": "Afficher l'annonce",
+"ja": "全幅を有効にする"
+}
+},
+{
+"type": "image_picker",
+"id": "image_1",
+"label": {
+"en": "Banner Image Men",
+"de": " Banner Foto Men",
+"fr": "Bannière Image Hommes",
+"it": "Banner Image Men",
+"ja": "バナー画像男性",
+"es": "Banner Image Men",
+"pt-BR": "Homens de imagem de faixa"
+}
+},
+{
+"type": "url",
+"id": "link1",
+"label": {
+"en": "Banner Link Men",
+"de": " Banner Link Men",
+"fr": "Lien de bannière hommes",
+"it": "Banner Link Men",
+"ja": "バナーリンクメン",
+"es": "Banner Link Men",
+"pt-BR": "Homens de link de banner"
+}
+},
+{
+"id": "men_button",
+"type": "text",
+"label": {
+"en": "Mens Button",
+"de": " Mens-Taste",
+"fr": "Bouton homme",
+"it": "Bottone da uomo",
+"ja": "メンズボタン",
+"es": "Botón para hombre",
+"pt-BR": "Botão Mens"
+},
+"default": {
+"en": "Shop Now",
+"de": "Jetzt einkaufen",
+"fr": "Achetez maintenant",
+"it": "Acquistare ora",
+"ja": "今すぐ購入",
+"es": "Comprar ahora",
+"pt-BR": "Compre agora"
+}
+},
+{
+"type": "image_picker",
+"id": "image_2",
+"label": {
+"en": "Banner Image Women",
+"de": " Bannerbild Frauen",
+"fr": "Bannière Image Femmes",
+"it": "Banner Immagine Donne",
+"ja": "バナー画像女性",
+"es": "Banner Image Mujeres",
+"pt-BR": "Mulheres de imagem de banner"
+}
+},
+
+{
+"type": "url",
+"id": "link2",
+"label": {
+"en": "Banner Link women",
+"de": " Banner Link Frauen",
+"fr": "Banner Link femmes",
+"it": "Banner Link donne",
+"ja": "バナーリンクの女性",
+"es": "Banner Link mujeres",
+"pt-BR": "Mulheres do Link Banner"
+}
+},
+{
+"id": "test_button",
+"type": "text",
+"label": {
+"en": "womens Button",
+"de": "der Knopf der Frauen",
+"fr": "Bouton Femme",
+"it": "Bottone da donna",
+"ja": "レディースボタン",
+"es": "botón de mujer",
+"pt-BR": "botão das mulheres"
+},
+"default": {
+"en": "Shop Now",
+"de": "Jetzt einkaufen",
+"fr": "Achetez maintenant",
+"it": "Acquistare ora",
+"ja": "今すぐ購入",
+"es": "Comprar ahora",
+"pt-BR": "Compre agora"
+}
+}
+],
+"presets": [{
+"name": {
+"en": "Home Banner",
+"de": "Home Banner",
+"fr": "Bannière d'accueil",
+"it": "Banner Home",
+"ja": "ホームバナー",
+"es": "Bandera de la casa",
+"pt-BR": "Banner inicial"
+},
+"category": {
+"en": "Promotional",
+"de": "Werbeartikel",
+"fr": "Promotionnelle",
+"it": "promozionale",
+"ja": "プロモーション",
+"es": "promocional",
+"pt-BR": "promocional"
+}
+}
+]
+}
+
+{% endschema %}
+
+{% stylesheet %}
+{% endstylesheet %}
+
+{% javascript %}
+{% endjavascript %}

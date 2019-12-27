@@ -1,0 +1,147 @@
+<!-- Ajax API -->
+{{ '//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js' | script_tag }}
+{{ 'api.jquery.js' | shopify_asset_url | script_tag }}
+
+
+<style type="text/css">
+  .filters-toolbar__label{
+    text-align:center;
+  }
+  #rv__recent_products{
+    margin-bottom:30px;
+  }
+  .filters-toolbar__label{
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #162950;
+    font-weight: 400 !important;
+    font-size: 1.79259rem !important;
+    margin-bottom: 45px;
+  }
+  #rv__recent_products.rv__grid{width: 100%; margin-top: 20px;}
+  .rv__grid .row{ display: block; clear: both;}
+  .rv__grid .rv__row .rv__column{ display:inline-block; }
+  .rv__grid .rv__row .rv__column.rv__one{ width: 100%; }
+  .rv__grid .rv__row .rv__column.rv__two{ width: 100%; }
+  .rv__grid .rv__row .rv__column.rv__three{ width: 33.33%;     padding-left: 22px; }
+  .rv__grid .rv__row .rv__column.rv__four{ width: 25%; padding-left: 22px; }
+  .rv__grid .rv__row .rv__column.rv__five{ width: 100%; }
+  .rv__grid .rv__row .rv__column.rv__six{ width: 100%; }
+  .rv__grid .rv__row .rv__column.rv__seven{ width: 100%; }
+  .rv__grid .rv__row .rv__column.rv__eight{ width: 100%; }
+  .rv__grid .rv__row .rv__column.rv__nine{ width: 100%; }
+  .rv__grid .rv__row .rv__column.rv__ten{ width: 100%; }
+  .rv__grid .rv__row .rv__column.rv__eleven{ width: 100%; }
+  .rv__grid .rv__row .rv__column.rv__twelve{ width: 100%; }
+  .rv__clearfix{ clear: both; }
+  .rv__grid img.rv__responsive{
+    max-width: 100%;
+    max-height: 300px;
+  }
+  .rv__grid h2 a {     
+    word-break: break-word;
+    min-height: 44px;
+    line-height: 22px;
+    font-size: 18px;
+    color: #000;
+    text-transform: capitalize;
+  }
+  .rv__center{
+    text-align:center;
+  }
+  @media screen and (max-width: 568px){
+    .rv__sm_twelve{ width: 50% !important; clear: both; }
+  }
+</style>
+<div id="rv__recent_products" class="rv__grid wrapper">
+  <!-- <h1 id="title-rv" style="display: none;">recentally view</h1> -->
+  <div class="rv__row rv__center " >
+  </div>
+</div>
+{% comment %}
+Recently Viewed Labs Snippet, included on the products page.
+{% endcomment %}
+<script type="text/javascript">
+ 
+  if(jQuery == undefined){
+    $("head").append($("<script />",{src: "//code.jquery.com/jquery-2.1.4.min.js"}));
+  }
+  if(jQuery.cookie == undefined){
+    $("head").append($("<script />",{src: "//cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"}));
+  }
+  var pHandle  
+  {% if product %}
+  pHandle = "{{product.handle}}";
+  {% endif %}
+  var pLimit   = 4; 
+  var pPointer = 0;
+  jQuery(function($){
+    // Gives the assets enough time to load.
+    setTimeout(function(){
+      if(jQuery.cookie('rv__recent_products') == undefined){
+        if(pHandle){
+          jQuery.cookie('rv__recent_products', "{{product.handle}}", {expires: 365, path: "/"});
+                        }
+                        }
+                        var currentProducts = [];
+                        if(jQuery.cookie('rv__recent_products') != undefined){
+            currentProducts = jQuery.cookie('rv__recent_products').split(",");	
+          }
+
+          if(currentProducts.length > 0){
+            $('#_rvp').show();
+          }
+          // set the current product
+          // If its not already listed
+          if(currentProducts.indexOf(pHandle) == -1){
+            // If we are at the limit move it to the front
+            if(currentProducts.length >= pLimit){
+              currentProducts.unshift; // remove very last item
+            }
+            currentProducts.push(pHandle); // add this one
+          }
+          // prevent cookie override.
+          if(currentProducts.length >= 1){
+            $(".rv__row").append(" <h1 class="+" filters-toolbar__label  section-header__title"+">Recently Viewed </h1>");
+            jQuery.cookie('rv__recent_products', currentProducts.join(","), {expires: 365, path: "/"});	
+          }
+
+          $("#rv__spinner").hide();
+          $.each(currentProducts.reverse(), function(i,e){
+            if(pPointer >= pLimit || e == ''){
+              return false;
+            }else{
+              pPointer += 1;
+              Shopify.getProduct(e, function(product){	
+                // we now have the product
+                var productContainer = $("<div />",{class: "rv__column rv__four rv__sm_twelve grid__wrap" } );
+                var productBox       = $("<div />",{class: "rv__product_box rv__center"});
+                var productImg       = $("<div />",{class: "rv__product_img"});
+                var plink            = $("<a />",{alt: product.title, title: product.title, href: product.url});
+                var plink2           = $("<a />",{alt: product.title, title: product.title, href: product.url,html: product.title});
+                var pTitle           = $("<h2/>");
+                var pImage           = $("<img />",{class: "rv__responsive", src: product.featured_image});
+                var pImageWrap       = $("<div />",{class: "rv__img_wrap"});
+                var pPrice           = $("<div />",{class: "rv__price", html: Shopify.formatMoney(product.price)});
+                productImg.append(plink);
+                pImageWrap.append(pImage);
+                plink.append(pImageWrap);
+                pTitle.append(plink2);
+                productBox.append(productImg);
+                productBox.append(pTitle)
+                productBox.append(pPrice);
+                productContainer.append(productBox);
+                $("#rv__recent_products.rv__grid>.rv__row:last").append(productContainer);
+                $("#rv__recent_products.rv__grid").append("<div class='rv__clearfix'></div>");
+              });
+            }	
+          });
+        }, 850);
+      });
+</script>
+<script>
+  $(document).ready(function() {
+    $("#title-rv").css("display", "block");   
+  });
+</script>
+

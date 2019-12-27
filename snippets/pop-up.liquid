@@ -1,0 +1,86 @@
+  <div class="popup-box gee-popup" id="holidayPopupContent" >
+    <div class="popup-inner">
+      <div class="user-content"> 
+        <div class="image-wrapper">
+          {% if settings.popup_image != blank %}
+          {%- assign img_url = settings.popup_image | img_url: '1x1' | replace: '_1x1.', '_{width}x.' -%}
+          
+            <div >
+              <img id="{{ img_id }}"
+                   class="feature-row__image lazyload"
+                   src="{{ settings.popup_image | img_url: '200x200' }}"
+                   data-src="{{ img_url }}"
+                   data-aspectratio="{{ settings.popup_image.aspect_ratio }}"
+                   data-sizes="auto"
+                   alt="{{ settings.popup_image.alt | escape }}">
+            </div>
+        
+          <noscript>
+            {{ settings.popup_image | img_url: '300x' | img_tag: settings.popup_image.alt, 'feature-row__image' }}
+          </noscript>
+          {% else %}
+          {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+          {% endif %}
+        </div>
+        
+        {% form 'customer' %}
+        <div class="page-width">
+          <h2 class="newsletter__heading home__subtitle">{{ settings.heading | escape }}</h2>
+          {% unless settings.subheading == blank %}
+            <div class="newsletter__subheading">{{ settings.subheading }}</div>
+          {% endunless %}
+          <input type="hidden" name="contact[tags]" value="newsletter">
+          <div class="popup-input-group" data-animate>
+            <input type="email" value="{% if customer %}{{ customer.email }}{% endif %}" required placeholder="enter your email" name="contact[email]" class="input-group__field" id="EmailField{{ id }}" aria-label="{{ 'general.newsletter_form.newsletter_placeholder' | t }}" autocorrect="off" autocapitalize="off">
+            <div class="input-group__btn input-group__btn--newsletter">
+              <button type="submit" class="btn--newsletter__submit">Subscribe</button>
+            </div>
+          </div>
+          <div class="newsletter__message" aria-role="alert">
+            {% if form.posted_successfully? %}
+              <p class="form-success" aria-role="alert">
+                {% unless settings.success_message == blank %}
+                  {{ settings.success_message | escape }}
+                {% endunless %}
+              </p>
+            {% endif %}
+            {{ form.errors | default_errors }}
+          </div>
+        </div>
+        {% endform %}
+      </div>
+    </div>
+  </div>
+<script>
+jQuery(document).ready(function () {
+  function openFancybox(
+) {
+    setTimeout(function () {
+      jQuery('.various').trigger('click');
+    }, 500);
+  };
+  var visited = jQuery.cookie('visited');
+  if (visited == 'yes') {
+    // second page load, cookie active
+  } else {
+    openFancybox(
+); // first page load, launch fancybox
+  }
+  jQuery.cookie('visited', 'yes', {
+    expires: {{ settings.newsletter_popup_days }} // the number of days cookie  will be effective
+  });
+  $(".various").fancybox(
+{
+    maxWidth	: 600,
+    maxHeight	: 400,
+    fitToView	: false,
+    width		: '70%',
+    height		: '100%',
+    autoSize	: false,
+    closeClick	: true,
+    openEffect	: 'none',
+    closeEffect	: 'none'
+  });
+});
+
+</script>
